@@ -6,7 +6,7 @@ This is a project made with Godot to explore the Mandelbrot Set using shaders an
 
 ## Idea
 
-We start with the view of the box $[-2,\ 2] \times [-2,\ 2]$ in the Cartesian plane, with the Mandelbrot Set displayed inside it. When the user clicks on any point inside this box, the selected point becomes the new center and a zoom of 2x is applied. The new box now has sides of length 2 (half of the initial length of 4). The corresponding view of the Mandelbrot Set is rendered again. This process can be repeated an arbitrary number of times, allowing the user to zoom-in indefinitely.
+We start with the view of the box $[-2,\ 2] \times [-2,\ 2]$ in the Cartesian plane, with the Mandelbrot Set displayed inside it. When the user clicks on any point inside this box, the selected point becomes the new center and a zoom of 2x is applied. The new box now has sides of length 2 (half of the initial length of 4). The corresponding view of the Mandelbrot Set is rendered again. This process can be repeated an arbitrary number of times, allowing the user to zoom-in indefinitely. Each point within the box is obtained by converting the UV coordinate into the respective horizontal and vertical coordinate arrays.
 
 <p align="center">
     <img width="700" src="https://github.com/user-attachments/assets/f3efdf18-89b9-4aeb-a8b1-7d010a9c7440" />
