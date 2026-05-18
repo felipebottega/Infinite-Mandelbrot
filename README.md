@@ -2,12 +2,12 @@
 
 This is a project made with Godot to explore the Mandelbrot Set using shaders and arbitrary-precision arithmetic to achieve infinite zoom.
 
-## Steps
-conversor float -> array int OK
-aritmética com os arrays OK
-sistema zoom-in, cálculo dos vértices da caixa (apenas numérico)
-sistema zoom-out, cálculo dos vértices da caixa (apenas numérico)
-sistema de aumento/diminuição de precisão dos arrays int
+## Next Steps
+        Converter float to int array ✔️
+        Array arithmetic ✔️
+        Zoom-in system, box vertex calculation (numeric only)
+        Zoom-out system, box vertex calculation (numeric only)
+        System for increasing/decreasing the precision of int arrays
 
 ## Release history
 
