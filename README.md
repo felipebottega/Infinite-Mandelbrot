@@ -20,7 +20,7 @@ the system stores this number as the array
 
 $$[d,\ \pm\ a_0,\ a_1,\ \ldots, a_m,\ a_{m+1},\ a_{m+2},\ \ldots, a_n]$$
 
-where $d$ is the position of the decimal point.
+where $d$ is the position of the decimal point. The four vertices are passed to the shader as uniform. Then the shader uses internal arithmetic routines to perform the digit-by-digit calculations, with the array representation. There is no actual zooming happening, the box's location is always determined by the four vertices.
 
 ## Next Steps
         Converter float to int array ✔️
