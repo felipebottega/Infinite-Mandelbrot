@@ -12,7 +12,7 @@ This is a project made with Godot to explore the Mandelbrot Set using shaders an
 ## Release history
 
 ### v0.0.1
-    The project officially begins.
+    The project officially begins
 
 ### v0.1.0
     ### New ###
@@ -20,7 +20,7 @@ This is a project made with Godot to explore the Mandelbrot Set using shaders an
     - Better statistics tracking
 
     ### Improvements ###
-    - Class file arbitrary-precision arithmetic 
+    - Class file arbitrary-precision arithmetic
 
     ### Fixes ###
-    - README file missing.
+    - README file missing
