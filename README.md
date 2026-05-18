@@ -14,15 +14,13 @@ sistema de aumento/diminuição de precisão dos arrays int
 ### v0.0.1
     The project officially begins.
 
-
 ### v0.1.0
     ### New ###
-    - Experimental glow shader
+    - Interactive zoom-in
     - Better statistics tracking
 
     ### Improvements ###
-    - Faster collision processing
-    - Reduced memory usage
+    - Class file arbitrary-precision arithmetic 
 
     ### Fixes ###
-    - Fixed pause timing issues
+    - README file missing.
