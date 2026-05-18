@@ -9,7 +9,7 @@ This is a project made with Godot to explore the Mandelbrot Set using shaders an
 We start with the view of the box $[-2,\ 2] \times [-2,\ 2]$ in the Cartesian plane, with the Mandelbrot Set displayed inside it. When the user clicks on any point inside this box, the selected point becomes the new center and a zoom of 2x is applied. The new box now has sides of length 2 (half of the initial length of 4). The corresponding view of the Mandelbrot Set is rendered again. This process can be repeated an arbitrary number of times, allowing the user to zoom-in indefinitely.
 
 <p align="center">
-        <img width="700" src="https://github.com/user-attachments/assets/0c677ad0-2ab8-4649-a001-d3e8df566c8a" />
+    <img width="700" src="https://github.com/user-attachments/assets/f3efdf18-89b9-4aeb-a8b1-7d010a9c7440" />
 </p>
 
 The vertices of the box and all its inners points are stored through the following system: given any real number
