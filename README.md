@@ -37,7 +37,6 @@ where $d$ is the position of the decimal point. The four vertices are passed to 
 ### v0.1.0
     ### New ###
     - Interactive zoom-in
-    - Better statistics tracking
 
     ### Improvements ###
     - Class file arbitrary-precision arithmetic
