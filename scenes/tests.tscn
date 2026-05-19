@@ -1,6 +1,12 @@
 [gd_scene format=3 uid="uid://butl8c2ef7nrq"]
 
 [ext_resource type="Script" uid="uid://j3wovo3f21ha" path="res://scripts/tests.gd" id="1_738vk"]
+[ext_resource type="Texture2D" uid="uid://yw8kx7mrmwkl" path="res://assets/numbered-grid-12514.jpg" id="2_tcuvc"]
 
 [node name="Tests" type="Node2D" unique_id=294735827]
 script = ExtResource("1_738vk")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1628827056]
+position = Vector2(251.5, 253)
+scale = Vector2(0.59176475, 0.58588237)
+texture = ExtResource("2_tcuvc")
