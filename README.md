@@ -25,9 +25,14 @@ where $d$ is the position of the decimal point. The four vertices are passed to 
 ## Next Steps
         Converter float to int array ✔️
         Array arithmetic ✔️
-        Zoom-in system, box vertex calculation (numeric only)
-        Zoom-out system, box vertex calculation (numeric only)
-        System for increasing/decreasing the precision of int arrays
+        Zoom-in system, box vertex calculation (numeric only) ✔️
+        Zoom-out system, box vertex calculation (numeric only) ✔️
+        System for increasing/decreasing the precision of int arrays ✔️
+        Array arithmetic with shaders
+        Rendering of the fractal
+        Zoom system with shaders
+        History of fractal views
+        UI
 
 ## Release history
 
