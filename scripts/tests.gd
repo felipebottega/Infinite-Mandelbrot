@@ -13,15 +13,26 @@ var zoom := [1, 2, 0]
 var zoom_int = zoom[1]
 var screen_size: Vector2
 var box_size: float
+var digits_precision: int = 4
 var infinite_math = InfiniteMath.new()
 
 const TWO := [1, 2, 0]
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: Sprite2D = $SubViewportContainer/SubViewport/Sprite2D
 
 
 func _ready() -> void:
 	screen_size = get_viewport_rect().size
+	
+	sprite.material.set_shader_parameter("ax", ax)
+	sprite.material.set_shader_parameter("ay", ay)
+	sprite.material.set_shader_parameter("bx", bx)
+	sprite.material.set_shader_parameter("by", by)
+	sprite.material.set_shader_parameter("cx", cx)
+	sprite.material.set_shader_parameter("cy", cy)
+	sprite.material.set_shader_parameter("dx", dx)
+	sprite.material.set_shader_parameter("dy", dy)
+	sprite.material.set_shader_parameter("digits_precision", digits_precision)
 	
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
