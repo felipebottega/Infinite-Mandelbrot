@@ -52,7 +52,7 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
         Zoom-out system, box vertex calculation (numeric only) ✔️
         System for increasing/decreasing the precision of int arrays ✔️
         Array arithmetic with shaders ✔️
-        Rendering of the fractal
+        Rendering of the fractal ✔️
         Zoom system with shaders
         History of fractal views
         UI
@@ -75,3 +75,7 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
 ### v0.2.0
     ### New ###
     - Array arithmetic with shaders working
+	
+### v0.3.0
+	### New ###
+	- Rendering of the fractal with shaders

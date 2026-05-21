@@ -24,11 +24,12 @@ func float2array(x: float) -> Array:
 	var str_x: String = str(x)
 	var chars = str_x.split()
 	var dot_position: int
+	var is_negative := false
 	
 	# Deal with negative numbers.
 	if chars[0] == "-":
+		is_negative = true
 		dot_position = str_x.find(".") - 1
-		chars[1] = "-" + chars[1]
 	# Deal with positive numbers.
 	else:
 		dot_position = str_x.find(".")
@@ -38,6 +39,12 @@ func float2array(x: float) -> Array:
 	for i in chars:
 		if i != "-" and i != ".":
 			vals.append(int(i))
+	
+	if is_negative:
+		for i in range(1, vals.size()):
+			if vals[i] != 0:
+				vals[i] = -vals[i]
+				break
 	
 	return vals
 	

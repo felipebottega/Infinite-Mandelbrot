@@ -1,15 +1,23 @@
 shader_type canvas_item;
 
-const int MAX_DIGITS = 100;
-uniform int ax[MAX_DIGITS];
-uniform int ay[MAX_DIGITS];
-uniform int bx[MAX_DIGITS];
-uniform int by[MAX_DIGITS];
-uniform int cx[MAX_DIGITS];
-uniform int cy[MAX_DIGITS];
-uniform int dx[MAX_DIGITS];
-uniform int dy[MAX_DIGITS];
+const int MAX_DIGITS = 16;
+//uniform int ax[MAX_DIGITS];
+//uniform int ay[MAX_DIGITS];
+//uniform int bx[MAX_DIGITS];
+//uniform int by[MAX_DIGITS];
+//uniform int cx[MAX_DIGITS];
+//uniform int cy[MAX_DIGITS];
+//uniform int dx[MAX_DIGITS];
+//uniform int dy[MAX_DIGITS];
+uniform int ex[MAX_DIGITS];
+uniform int ey[MAX_DIGITS];
+uniform int box_size[MAX_DIGITS];
+uniform int ex_size;
+uniform int ey_size;
+uniform int box_size_size;
 uniform int digits_precision;
+uniform int max_iter = 100;
+uniform float colors = 0.5;
 
 /*
 ========================================================
@@ -26,6 +34,41 @@ Examples:
 [1, 5, 6] = 0.56
 [3, -1, 2, 3, 4, 5] = -123.45
 [1, 0] = 0
+
+--------------------------------------------------------
+IMPORTANT: SIZE != PRECISION
+--------------------------------------------------------
+
+This library uses TWO different concepts:
+
+1. repr size
+2. decimal precision
+
+They are NOT the same thing.
+
+repr size:
+- number of VALID entries in the repr array
+- used by all arithmetic functions
+
+Correct:
+
+float_repr_add(a, a_size, b, b_size, ...)
+
+Wrong:
+
+float_repr_add(a, digits_precision, b, digits_precision, ...)
+
+decimal precision:
+- number of decimal digits to GENERATE
+- only used in functions like:
+
+_float_to_repr(value, precision, ...)
+float_repr_div(a, a_size, b, b_size, precision, ...)
+
+Example:
+
+_float_to_repr(0.123456, 2, ...) -> 0.12
+_float_to_repr(0.123456, 6, ...) -> 0.123456
 
 --------------------------------------------------------
 SIGN RULE
@@ -1087,38 +1130,171 @@ void _float_to_repr(float value, int precision, out int repr[MAX_DIGITS], out in
 	repr_size = digits_size + 1;
 }
 
+void float_repr_limit_precision(int packed[MAX_DIGITS], int packed_size, int precision, out int out_repr[MAX_DIGITS], out int out_size) {
+	if (packed_size > MAX_DIGITS) {
+		packed_size = MAX_DIGITS;
+	}
+
+	if (packed_size <= 1) {
+		_set_zero_repr(out_repr, out_size);
+		return;
+	}
+
+	int decimal_pos = packed[0];
+	int max_size = decimal_pos + precision + 1;
+
+	if (max_size < 2) {
+		max_size = 2;
+	}
+	if (max_size > MAX_DIGITS) {
+		max_size = MAX_DIGITS;
+	}
+
+	out_size = (packed_size < max_size) ? packed_size : max_size;
+
+	for (int i = 0; i < out_size; i++) {
+		out_repr[i] = packed[i];
+	}
+
+	while (out_size > 2 && out_size > decimal_pos + 1 && out_repr[out_size - 1] == 0) {
+		out_size -= 1;
+	}
+
+	int all_zero = 1;
+	for (int i = 1; i < out_size; i++) {
+		if (out_repr[i] != 0) {
+			all_zero = 0;
+			break;
+		}
+	}
+
+	if (all_zero == 1) {
+		_set_zero_repr(out_repr, out_size);
+	}
+}
+
 /*
 ==================
 FRACTAL FUNCTIONS
 =================
 */
 
-
-
-void fragment() {
-    vec2 uv = UV;
+void transform_coordinate_system(vec2 uv, out int x[MAX_DIGITS], out int x_size, out int y[MAX_DIGITS], out int y_size) {
+    uv.y = 1.0 - uv.y;
+    uv = uv - 0.5;
 
     int uvx[MAX_DIGITS];
     int uvx_size = 0;
-    _float_to_repr(uv.x, 8, uvx, uvx_size);
+    _float_to_repr(uv.x, digits_precision, uvx, uvx_size);
 
     int uvy[MAX_DIGITS];
     int uvy_size = 0;
-    _float_to_repr(uv.y, 8, uvy, uvy_size);
+    _float_to_repr(uv.y, digits_precision, uvy, uvy_size);
 
-    int ax2[MAX_DIGITS];
-    int ax2_size = 0;
-    float_repr_mul(ax, digits_precision, uvx, uvx_size, ax2, ax2_size);
+	int tmp[MAX_DIGITS];
+	int tmp_size = 0;
+	
+	int limited[MAX_DIGITS];
+	int limited_size = 0;
 
-    int by2[MAX_DIGITS];
-    int by2_size = 0;
-    float_repr_mul(by, digits_precision, uvy, uvy_size, by2, by2_size);
+    float_repr_mul(box_size, box_size_size, uvx, uvx_size, tmp, tmp_size);
+    float_repr_add(ex, ex_size, tmp, tmp_size, limited, limited_size);
+	float_repr_limit_precision(limited, limited_size, digits_precision, x, x_size);
 
-    int result[MAX_DIGITS];
-    int result_size = 0;
-    float_repr_add(ax2, digits_precision, by2, digits_precision, result, result_size);
+    float_repr_mul(box_size, box_size_size, uvy, uvy_size, tmp, tmp_size);
+    float_repr_add(ey, ey_size, tmp, tmp_size, limited, limited_size);
+	float_repr_limit_precision(limited, limited_size, digits_precision, y, y_size);
+}
 
-    float red = _repr_to_float(result, result_size);
+vec3 palette(int i) {
+	float t = float(i) / float(max_iter);
 
-    COLOR = vec4(red, 1.0, 1.0, 1.0);
+	// Corta exterior completamente.
+	if (i < int(0.01 * float(max_iter))) {
+		return vec3(0.0);
+	}
+
+	// Remapeia só a região interessante.
+	t = clamp((t - 0.1) / 0.8, 0.0, 1.0);
+
+	// Melhora contraste perto da borda.
+	t = pow(t, 0.2);
+
+	// Paleta com cores distintas.
+	return 0.5 + colors * cos(2.0 * colors * TAU * (t + vec3(0.0, 0.25, 0.5)));
+}
+
+vec4 compute_iteration(int x[MAX_DIGITS], int x_size, int y[MAX_DIGITS], int y_size) {
+	int zx[MAX_DIGITS];
+	int zx_size = 0;
+	_set_zero_repr(zx, zx_size);
+
+	int zy[MAX_DIGITS];
+	int zy_size = 0;
+	_set_zero_repr(zy, zy_size);
+
+	int mag2[MAX_DIGITS];
+	int mag2_size = 0;
+
+	int zx2[MAX_DIGITS];
+	int zx2_size = 0;
+
+	int zy2[MAX_DIGITS];
+	int zy2_size = 0;
+
+	int diff[MAX_DIGITS];
+	int diff_size = 0;
+	
+	int tmp[MAX_DIGITS];
+	int tmp_size = 0;
+
+	int twice[MAX_DIGITS];
+	int twice_size = 0;
+
+	int zx_old[MAX_DIGITS];
+	int zx_old_size = 0;
+
+	for (int i = 0; i < max_iter; i++) {
+		zx_old_size = zx_size;
+		for (int k = 0; k < zx_size; k++) {
+			zx_old[k] = zx[k];
+		}
+
+		// |z|^2 = zx^2 + zy^2
+		float_repr_mul(zx, zx_size, zx, zx_size, zx2, zx2_size);
+		float_repr_mul(zy, zy_size, zy, zy_size, zy2, zy2_size);
+		float_repr_add(zx2, zx2_size, zy2, zy2_size, mag2, mag2_size);
+
+		if (_repr_to_float(mag2, mag2_size) > 4.0) {
+			return vec4(palette(i), 1.0);
+		}
+
+		// zx' = zx^2 - zy^2 + cx
+		float_repr_sub(zx2, zx2_size, zy2, zy2_size, diff, diff_size);
+		float_repr_add(diff, diff_size, x, x_size, tmp, tmp_size);
+		float_repr_limit_precision(tmp, tmp_size, digits_precision, zx, zx_size);
+
+		// zy' = 2 * old_zx * zy + cy
+		float_repr_mul(zx_old, zx_old_size, zy, zy_size, diff, diff_size);
+		float_repr_add(diff, diff_size, diff, diff_size, twice, twice_size);
+		float_repr_add(twice, twice_size, y, y_size, tmp, tmp_size);
+		float_repr_limit_precision(tmp, tmp_size, digits_precision, zy, zy_size);
+	}
+
+	return vec4(1.0, 1.0, 1.0, 1.0);
+}
+
+void fragment() {
+    vec2 uv = UV;
+	
+	int x[MAX_DIGITS];
+	int x_size = 0;
+
+	int y[MAX_DIGITS];
+	int y_size = 0;
+
+	transform_coordinate_system(uv, x, x_size, y, y_size);
+	
+	COLOR = compute_iteration(x, x_size, y, y_size);
+	
 }
