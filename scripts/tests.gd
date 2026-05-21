@@ -12,19 +12,20 @@ var dy := [1, -2, 0]
 var center_box_x := [1, 0, 0]
 var center_box_y := [1, 0, 0]
 var box_size := [1, 4, 0]
-var zoom := [1, 2, 0]
+var zoom := [1, 10, 0]
 var zoom_int = zoom[1]
 var screen_size: Vector2
-var digits_precision: int = 6
-var max_iter: int = 20
+var digits_precision: int = 42
+var max_iter: int = 1500
 var colors: float = 0.5
 var infinite_math = InfiniteMath.new()
+var div_precision: = 1000
 var snapshot_rect: TextureRect
 var rendering_snapshot := false
 var fractal_material: ShaderMaterial
+var current_render_id := 0
 
-const TWO := [1, 2, 0]
-
+const TILE_SIZE := 32
 
 @onready var viewport_container := $SubViewportContainer
 @onready var subviewport := $SubViewportContainer/SubViewport
@@ -44,28 +45,30 @@ func _ready() -> void:
 	add_child(snapshot_rect)
 	subviewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 
-	fractal_material.set_shader_parameter("ex", PackedInt32Array(center_box_x))
-	fractal_material.set_shader_parameter("ey", PackedInt32Array(center_box_y))
-	fractal_material.set_shader_parameter("box_size", PackedInt32Array(box_size))
-	fractal_material.set_shader_parameter("ex_size", center_box_x.size())
-	fractal_material.set_shader_parameter("ey_size", center_box_y.size())
-	fractal_material.set_shader_parameter("box_size_size", box_size.size())
+	_set_fractal_shader_parameters()
 	fractal_material.set_shader_parameter("digits_precision", digits_precision)
 	fractal_material.set_shader_parameter("max_iter", max_iter)
 	fractal_material.set_shader_parameter("colors", colors)
-	await _store_frame()
+	fractal_material.set_shader_parameter("viewport_size", Vector2(subviewport.size))
+	await _store_frame(current_render_id)
 
 func _input(event: InputEvent) -> void:
-	if rendering_snapshot:
-		return
 	if event is InputEventMouseButton and event.pressed:
+		current_render_id += 1
+		var my_render_id = current_render_id
 		rendering_snapshot = true
 		var mouse_position = event.position
 		var mouse_position_array = _mouse_position_to_box_coordinates(mouse_position)
 		await zoom_animation(mouse_position)
+		
+		if my_render_id != current_render_id:
+			return
+			
 		update_vertex(mouse_position_array)
-		await _store_frame()
-		rendering_snapshot = false
+		await _store_frame(my_render_id)
+		
+		if my_render_id == current_render_id:
+			rendering_snapshot = false
 
 func zoom_animation(mouse_position: Vector2):
 	var position = screen_size/2.0 - zoom_int * mouse_position
@@ -75,56 +78,159 @@ func zoom_animation(mouse_position: Vector2):
 	tween.tween_property(snapshot_rect, "position", position, 1.0)
 	await tween.finished
 
-func _store_frame() -> void:
-	snapshot_rect.hide()
+func _build_preview_image(render_size: Vector2i) -> Image:
+	var frame_image := Image.create(render_size.x, render_size.y, false, Image.FORMAT_RGBA8)
+	frame_image.fill(Color(0.0, 0.0, 0.0, 1.0))
+	if snapshot_rect.texture == null:
+		return frame_image
+	var source_image := snapshot_rect.texture.get_image()
+	var source_size: Vector2i = source_image.get_size()
+	for y in range(render_size.y):
+		for x in range(render_size.x):
+			var source_x := int(floor((float(x) - snapshot_rect.position.x) / snapshot_rect.scale.x))
+			var source_y := int(floor((float(y) - snapshot_rect.position.y) / snapshot_rect.scale.y))
+			if source_x >= 0 and source_x < source_size.x and source_y >= 0 and source_y < source_size.y:
+				frame_image.set_pixel(x, y, source_image.get_pixel(source_x, source_y))
+	return frame_image
+
+func _shader_repr(value: Array) -> Array:
+	var decimal_pos := int(value[0])
+	var digits := []
+	var sign := 1
+
+	for i in range(1, value.size()):
+		var d := int(value[i])
+		if d < 0:
+			sign = -1
+			d = -d
+		digits.append(d)
+
+	if digits.is_empty():
+		return [1, 0]
+
+	while digits.size() < decimal_pos:
+		digits.append(0)
+
+	var int_digits := digits.slice(0, decimal_pos)
+	var frac_digits := digits.slice(decimal_pos)
+
+	if int_digits.is_empty():
+		int_digits = [0]
+
+	while int_digits.size() % 4 != 0:
+		int_digits.push_front(0)
+
+	var int_limbs := []
+
+	for i in range(0, int_digits.size(), 4):
+		int_limbs.append(int_digits[i] * 1000 + int_digits[i + 1] * 100 + int_digits[i + 2] * 10 + int_digits[i + 3])
+
+	while int_limbs.size() > 1 and int_limbs[0] == 0:
+		int_limbs.remove_at(0)
+
+	while frac_digits.size() > 0 and frac_digits.size() % 4 != 0:
+		frac_digits.append(0)
+
+	var frac_limbs := []
+
+	for i in range(0, frac_digits.size(), 4):
+		frac_limbs.append(frac_digits[i] * 1000 + frac_digits[i + 1] * 100 + frac_digits[i + 2] * 10 + frac_digits[i + 3])
+
+	while frac_limbs.size() > 0 and frac_limbs[frac_limbs.size() - 1] == 0:
+		frac_limbs.pop_back()
+
+	var limbs := int_limbs + frac_limbs
+	var all_zero := true
+
+	for i in range(limbs.size()):
+		if limbs[i] != 0:
+			all_zero = false
+			break
+
+	if all_zero:
+		return [1, 0]
+
+	if sign < 0:
+		for i in range(limbs.size()):
+			if limbs[i] != 0:
+				limbs[i] = -limbs[i]
+				break
+
+	var repr := [int_limbs.size()]
+	repr.append_array(limbs)
+
+	return repr
+
+func _set_fractal_shader_parameters() -> void:
+	var ex_repr := _shader_repr(center_box_x)
+	var ey_repr := _shader_repr(center_box_y)
+	var box_size_repr := _shader_repr(box_size)
+	fractal_material.set_shader_parameter("ex", PackedInt32Array(ex_repr))
+	fractal_material.set_shader_parameter("ey", PackedInt32Array(ey_repr))
+	fractal_material.set_shader_parameter("box_size", PackedInt32Array(box_size_repr))
+	fractal_material.set_shader_parameter("ex_size", ex_repr.size())
+	fractal_material.set_shader_parameter("ey_size", ey_repr.size())
+	fractal_material.set_shader_parameter("box_size_size", box_size_repr.size())
+
+func _store_frame(render_id: int) -> void:
+	var render_size: Vector2i = subviewport.size
+	var frame_image := _build_preview_image(render_size)
+
 	snapshot_rect.scale = Vector2.ONE
 	snapshot_rect.position = Vector2.ZERO
 	viewport_container.show()
 	canvas.show()
 	canvas.material = fractal_material
-	subviewport.render_target_update_mode = SubViewport.UPDATE_ONCE
-	await RenderingServer.frame_post_draw
-	var image = subviewport.get_texture().get_image()
-	snapshot_rect.texture = ImageTexture.create_from_image(image)
-	subviewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
-	canvas.material = null
-	viewport_container.hide()
+	fractal_material.set_shader_parameter("viewport_size", Vector2(subviewport.size))
+	snapshot_rect.texture = ImageTexture.create_from_image(frame_image)
 	snapshot_rect.show()
+
+	for tile_y in range(0, render_size.y, TILE_SIZE):
+		for tile_x in range(0, render_size.x, TILE_SIZE):
+			if render_id != current_render_id:
+				return
+			var tile_width = min(TILE_SIZE, render_size.x - tile_x)
+			var tile_height = min(TILE_SIZE, render_size.y - tile_y)
+			fractal_material.set_shader_parameter("tile_origin", Vector2(tile_x, tile_y))
+			fractal_material.set_shader_parameter("tile_size", Vector2(tile_width, tile_height))
+			subviewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+			await RenderingServer.frame_post_draw
+			if render_id != current_render_id:
+				return
+			var tile_image = subviewport.get_texture().get_image()
+			var tile_rect := Rect2i(tile_x, tile_y, tile_width, tile_height)
+			frame_image.blit_rect(tile_image, tile_rect, Vector2i(tile_x, tile_y))
+			snapshot_rect.texture = ImageTexture.create_from_image(frame_image)
+			await get_tree().process_frame
+
+	if render_id == current_render_id:
+		subviewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+		canvas.material = null
+		viewport_container.hide()
 
 func update_vertex(mouse_position_array):
 	box_size = infinite_math.float_repr_sub(bx, ax)
 	center_box_x = mouse_position_array[0]
 	center_box_y = mouse_position_array[1]
 
-	box_size = infinite_math.float_repr_div(box_size, zoom)
-	var half_box_size = infinite_math.float_repr_div(box_size, TWO)
+	var zoomed_box_size = infinite_math.float_repr_div(box_size, zoom, div_precision)
+	box_size = infinite_math.float_repr_div(box_size, zoom, div_precision)
+	print(zoomed_box_size)
 
-	ax = infinite_math.float_repr_sub(center_box_x, half_box_size)
-	ay = infinite_math.float_repr_add(center_box_y, half_box_size)
-	bx = infinite_math.float_repr_add(center_box_x, half_box_size)
-	by = infinite_math.float_repr_add(center_box_y, half_box_size)
-	cx = infinite_math.float_repr_sub(center_box_x, half_box_size)
-	cy = infinite_math.float_repr_sub(center_box_y, half_box_size)
-	dx = infinite_math.float_repr_add(center_box_x, half_box_size)
-	dy = infinite_math.float_repr_sub(center_box_y, half_box_size)
+	ax = infinite_math.float_repr_sub(center_box_x, zoomed_box_size)
+	ay = infinite_math.float_repr_add(center_box_y, zoomed_box_size)
+	bx = infinite_math.float_repr_add(center_box_x, zoomed_box_size)
+	by = infinite_math.float_repr_add(center_box_y, zoomed_box_size)
+	cx = infinite_math.float_repr_sub(center_box_x, zoomed_box_size)
+	cy = infinite_math.float_repr_sub(center_box_y, zoomed_box_size)
+	dx = infinite_math.float_repr_add(center_box_x, zoomed_box_size)
+	dy = infinite_math.float_repr_sub(center_box_y, zoomed_box_size)
 
-	print("box size: ", box_size)
-	print("a: ", [infinite_math.array2float(ax),  infinite_math.array2float(ay)])
-	print("b: ", [infinite_math.array2float(bx), infinite_math.array2float(by)])
-	print("c: ", [infinite_math.array2float(cx), infinite_math.array2float(cy)])
-	print("d: ", [infinite_math.array2float(dx), infinite_math.array2float(dy)])
-	print("e: ", [infinite_math.array2float(center_box_x), infinite_math.array2float(center_box_y)])
-
-	fractal_material.set_shader_parameter("ex", PackedInt32Array(center_box_x))
-	fractal_material.set_shader_parameter("ey", PackedInt32Array(center_box_y))
-	fractal_material.set_shader_parameter("box_size", PackedInt32Array(box_size))
-	fractal_material.set_shader_parameter("ex_size", center_box_x.size())
-	fractal_material.set_shader_parameter("ey_size", center_box_y.size())
-	fractal_material.set_shader_parameter("box_size_size", box_size.size())
+	_set_fractal_shader_parameters()
 
 func _mouse_position_to_box_coordinates(mouse_position: Vector2):
 	var mouse_local = snapshot_rect.get_global_transform_with_canvas().affine_inverse() * mouse_position
-	var uv := Vector2(mouse_local.x/snapshot_rect.size.x, mouse_local.y/snapshot_rect.size.y)
+	var uv = (mouse_local + Vector2(0.5, 0.5)) / snapshot_rect.size
 	var mouse_position_x = infinite_math.float_repr_add(center_box_x, infinite_math.float_repr_mul(box_size, infinite_math.float2array(uv.x - 0.5)))
 	var mouse_position_y = infinite_math.float_repr_add(center_box_y, infinite_math.float_repr_mul(box_size, infinite_math.float2array((1.0 - uv.y) - 0.5)))
 

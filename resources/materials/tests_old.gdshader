@@ -1,8 +1,14 @@
 shader_type canvas_item;
 
-const int MAX_DIGITS = 25;
-const int LIMB_BASE = 10000;
-const int LIMB_DIGITS = 4;
+const int MAX_DIGITS = 32;
+//uniform int ax[MAX_DIGITS];
+//uniform int ay[MAX_DIGITS];
+//uniform int bx[MAX_DIGITS];
+//uniform int by[MAX_DIGITS];
+//uniform int cx[MAX_DIGITS];
+//uniform int cy[MAX_DIGITS];
+//uniform int dx[MAX_DIGITS];
+//uniform int dy[MAX_DIGITS];
 uniform int ex[MAX_DIGITS];
 uniform int ey[MAX_DIGITS];
 uniform int box_size[MAX_DIGITS];
@@ -23,15 +29,13 @@ ARBITRARY PRECISION FLOAT LIBRARY FOR GODOT SHADERS
 
 Representation format ("repr"):
 
-[decimal_pos, limbs...]
-
-Each limb stores 4 decimal digits in base 10000.
+[decimal_pos, digits...]
 
 Examples:
 
-[1, 12, 3400] = 12.34
-[1, 0, 5600] = 0.56
-[1, -123, 4500] = -123.45
+[2, 1, 2, 3, 4] = 12.34
+[1, 5, 6] = 0.56
+[3, -1, 2, 3, 4, 5] = -123.45
 [1, 0] = 0
 
 --------------------------------------------------------
@@ -73,10 +77,10 @@ _float_to_repr(0.123456, 6, ...) -> 0.123456
 SIGN RULE
 --------------------------------------------------------
 
-The number sign is encoded in the FIRST NON-ZERO limb.
+The number sign is encoded in the FIRST NON-ZERO digit.
 
-Positive: [1, 12, 3400]
-Negative: [1, -12, 3400]
+Positive: [2, 1, 2, 3, 4]
+Negative: [2, -1, 2, 3, 4]
 
 --------------------------------------------------------
 GDSCRIPT -> SHADER UNIFORM
@@ -93,9 +97,9 @@ uniform int number_b_size;
 
 GDScript:
 
-material.set_shader_parameter("number_a", PackedInt32Array([1, 12,3400]))
-material.set_shader_parameter("number_a_size", 3)
-material.set_shader_parameter("number_b", PackedInt32Array([1, 0,5600]))
+material.set_shader_parameter("number_a", PackedInt32Array([2, 1,2,3,4]))
+material.set_shader_parameter("number_a_size", 5)
+material.set_shader_parameter("number_b", PackedInt32Array([1, 5,6]))
 material.set_shader_parameter("number_b_size", 3)
 
 --------------------------------------------------------
@@ -104,9 +108,9 @@ EXAMPLE: ADDITION
 
 12.34 + 0.56
 
-A: [1,12,3400]
-B: [1,0,5600]
-Result: [1,12,9000] = 12.9
+A: [2,1,2,3,4]
+B: [1,5,6]
+Result: [2,1,2,9] = 12.9
 
 --------------------------------------------------------
 EXAMPLE: SUBTRACTION
@@ -116,7 +120,7 @@ EXAMPLE: SUBTRACTION
 
 A: [2,1,2,3,4]
 B: [1,5,6]
-Result: [1,11,7800] = 11.78
+Result: [2,1,1,7,8] = 11.78
 
 --------------------------------------------------------
 EXAMPLE: MULTIPLICATION
@@ -124,7 +128,7 @@ EXAMPLE: MULTIPLICATION
 
 12.34 * 0.56
 
-Result: [1,6,9104] = 6.9104
+Result: [1,6,9,1,0,4] = 6.9104
 
 --------------------------------------------------------
 EXAMPLE: DIVISION
@@ -133,7 +137,7 @@ EXAMPLE: DIVISION
 12.34 / 0.56
 
 precision = 6
-Result: [1,22,357,1400] = 22.035714
+Result: [2,2,2,0,3,5,7,1,4] = 22.035714
 
 --------------------------------------------------------
 SHADER EXAMPLE
@@ -146,7 +150,7 @@ void fragment() {
 
     float_repr_add(number_a, number_a_size, number_b, number_b_size, result, result_size);
 
-    float r = float(abs(result[1])) / float(LIMB_BASE - 1);
+    float r = float(abs(result[1])) / 9.0;
 
     COLOR = vec4(r, 0.0, 0.0, 1.0);
 }
@@ -180,21 +184,13 @@ IMPORTANT LIMITATIONS
 RECOMMENDED STARTING VALUES
 --------------------------------------------------------
 
-MAX_DIGITS = 32
-MAX_DIGITS = 64
+MAX_DIGITS = 128
+MAX_DIGITS = 256
 
-128 may already become expensive depending on usage.
+1024 may already become expensive depending on usage.
 
 ========================================================
 */
-
-
-int _precision_to_limb_count(int precision) {
-	if (precision <= 0) {
-		return 0;
-	}
-	return (precision + LIMB_DIGITS - 1) / LIMB_DIGITS;
-}
 
 void _set_zero_digits(out int digits[MAX_DIGITS], out int digits_size) {
 	digits[0] = 0;
@@ -365,10 +361,10 @@ void _bigint_add(int a[MAX_DIGITS], int a_size, int b[MAX_DIGITS], int b_size, o
 		int db = (j >= 0) ? b[j] : 0;
 		int s = da + db + carry;
 
-		rev[rev_size] = s % LIMB_BASE;
+		rev[rev_size] = s % 10;
 		rev_size += 1;
 
-		carry = s / LIMB_BASE;
+		carry = s / 10;
 		i -= 1;
 		j -= 1;
 	}
@@ -425,7 +421,7 @@ void _bigint_sub(int a[MAX_DIGITS], int a_size, int b[MAX_DIGITS], int b_size, o
 		int d = da - borrow - db;
 
 		if (d < 0) {
-			d += LIMB_BASE;
+			d += 10;
 			borrow = 1;
 		} else {
 			borrow = 0;
@@ -491,9 +487,9 @@ void _bigint_mul_small(	int a[MAX_DIGITS], int a_size, int m, out int out_digits
 		}
 
 		int p = a[i] * m + carry;
-		rev[rev_size] = p % LIMB_BASE;
+		rev[rev_size] = p % 10;
 		rev_size += 1;
-		carry = p / LIMB_BASE;
+		carry = p / 10;
 
 		i -= 1;
 	}
@@ -504,9 +500,9 @@ void _bigint_mul_small(	int a[MAX_DIGITS], int a_size, int m, out int out_digits
 			return;
 		}
 
-		rev[rev_size] = carry % LIMB_BASE;
+		rev[rev_size] = carry % 10;
 		rev_size += 1;
-		carry = carry / LIMB_BASE;
+		carry = carry / 10;
 	}
 
 	if (rev_size <= 0) {
@@ -581,8 +577,8 @@ void _bigint_mul(int a[MAX_DIGITS], int a_size, int b[MAX_DIGITS], int b_size, o
 		while (j >= 0) {
 			int idx = i + j + 1;
 			int s = a[a_start + i] * b[b_start + j] + res[idx];
-			res[idx] = s % LIMB_BASE;
-			res[idx - 1] += s / LIMB_BASE;
+			res[idx] = s % 10;
+			res[idx - 1] += s / 10;
 			j -= 1;
 		}
 		i -= 1;
@@ -590,9 +586,9 @@ void _bigint_mul(int a[MAX_DIGITS], int a_size, int b[MAX_DIGITS], int b_size, o
 
 	int k = res_size - 1;
 	while (k > 0) {
-		if (res[k] >= LIMB_BASE) {
-			res[k - 1] += res[k] / LIMB_BASE;
-			res[k] = res[k] % LIMB_BASE;
+		if (res[k] >= 10) {
+			res[k - 1] += res[k] / 10;
+			res[k] = res[k] % 10;
 		}
 		k -= 1;
 	}
@@ -677,7 +673,7 @@ void _bigint_divmod(int dividend[MAX_DIGITS], int dividend_size, int divisor[MAX
 		}
 
 		int lo = 0;
-		int hi = LIMB_BASE - 1;
+		int hi = 9;
 		int qdigit = 0;
 
 		while (lo <= hi) {
@@ -1008,11 +1004,9 @@ void float_repr_div(int a[MAX_DIGITS], int a_size, int b[MAX_DIGITS], int b_size
 	int a_frac = a_digits_size - a_dec;
 	int b_frac = b_digits_size - b_dec;
 
-	int precision_limbs = _precision_to_limb_count(precision);
-
 	int dividend[MAX_DIGITS];
 	int dividend_size = 0;
-	_copy_and_pad_right(a_digits, a_digits_size, b_frac + precision_limbs, dividend, dividend_size);
+	_copy_and_pad_right(a_digits, a_digits_size, b_frac + precision, dividend, dividend_size);
 
 	int divisor[MAX_DIGITS];
 	int divisor_size = 0;
@@ -1024,7 +1018,7 @@ void float_repr_div(int a[MAX_DIGITS], int a_size, int b[MAX_DIGITS], int b_size
 	int r_size = 0;
 	_bigint_divmod(dividend, dividend_size, divisor, divisor_size, q, q_size, r, r_size);
 
-	_integer_digits_to_repr(q, q_size, precision_limbs, sign, out_repr, out_repr_size);
+	_integer_digits_to_repr(q, q_size, precision, sign, out_repr, out_repr_size);
 }
 
 float _repr_to_float(int packed[MAX_DIGITS], int packed_size) {
@@ -1042,9 +1036,9 @@ float _repr_to_float(int packed[MAX_DIGITS], int packed_size) {
 		float digit = float(digits[i]);
 
 		if (expv >= 0) {
-			value += digit * pow(float(LIMB_BASE), float(expv));
+			value += digit * pow(10.0, float(expv));
 		} else {
-			value += digit / pow(float(LIMB_BASE), float(-expv));
+			value += digit / pow(10.0, float(-expv));
 		}
 	}
 
@@ -1081,9 +1075,9 @@ void _float_to_repr(float value, int precision, out int repr[MAX_DIGITS], out in
 		int rev_size = 0;
 
 		while (int_part > 0 && rev_size < MAX_DIGITS) {
-			rev[rev_size] = int_part % LIMB_BASE;
+			rev[rev_size] = int_part % 10;
 			rev_size += 1;
-			int_part /= LIMB_BASE;
+			int_part /= 10;
 		}
 
 		int_digits_size = rev_size;
@@ -1101,10 +1095,8 @@ void _float_to_repr(float value, int precision, out int repr[MAX_DIGITS], out in
 		digits_size += 1;
 	}
 
-	int limb_precision = _precision_to_limb_count(precision);
-
-	for (int i = 0; i < limb_precision; i++) {
-		frac_part *= float(LIMB_BASE);
+	for (int i = 0; i < precision; i++) {
+		frac_part *= 10.0;
 
 		int d = int(floor(frac_part));
 
@@ -1152,7 +1144,7 @@ void float_repr_limit_precision(int packed[MAX_DIGITS], int packed_size, int pre
 	}
 
 	int decimal_pos = packed[0];
-	int max_size = decimal_pos + _precision_to_limb_count(precision) + 1;
+	int max_size = decimal_pos + precision + 1;
 
 	if (max_size < 2) {
 		max_size = 2;
@@ -1226,7 +1218,7 @@ vec3 palette(int i) {
 	}
 
 	// Remapeia só a região interessante.
-	t = (t - 0.1) / 0.8;
+	t = clamp((t - 0.1) / 0.8, 0.0, 1.0);
 
 	// Melhora contraste perto da borda.
 	t = pow(t, 0.2);
@@ -1302,6 +1294,7 @@ void fragment() {
 	if (pixel.x < tile_origin.x || pixel.y < tile_origin.y || pixel.x >= tile_origin.x + tile_size.x || pixel.y >= tile_origin.y + tile_size.y) {
 		COLOR = vec4(0.0, 0.0, 0.0, 0.0);
 	}
+	
 	else{
 		int x[MAX_DIGITS];
 		int x_size = 0;
@@ -1310,7 +1303,7 @@ void fragment() {
 		int y_size = 0;
 
 		transform_coordinate_system(uv, x, x_size, y, y_size);
-		
+	
 		COLOR = compute_iteration(x, x_size, y, y_size);
-	}
+	}	
 }

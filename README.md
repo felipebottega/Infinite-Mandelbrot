@@ -79,3 +79,7 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
 ### v0.3.0
 	### New ###
 	- Rendering of the fractal with shaders
+	
+### v0.3.0
+	### Improvements ###
+	- More precision in general
