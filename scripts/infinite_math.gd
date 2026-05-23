@@ -48,6 +48,50 @@ func float2array(x: float) -> Array:
 	
 	return vals
 	
+func string_to_array(s: String) -> Array:
+	var str_x := s.strip_edges()
+	
+	if str_x.is_empty():
+		return [1, 0]
+
+	var sign := 1
+
+	if str_x.begins_with("+"):
+		str_x = str_x.substr(1)
+	elif str_x.begins_with("-"):
+		sign = -1
+		str_x = str_x.substr(1)
+
+	if str_x.is_empty():
+		return [1, 0]
+
+	var digits: Array[int] = []
+	var frac_count := 0
+	var seen_dot := false
+
+	for i in range(str_x.length()):
+		var ch := str_x.substr(i, 1)
+
+		if ch == ".":
+			if seen_dot:
+				push_error("Invalid numeric string: more than one decimal point.")
+				return [1, 0]
+			seen_dot = true
+			continue
+
+		if ch < "0" or ch > "9":
+			push_error("Invalid numeric string: unexpected character '%s'." % ch)
+			return [1, 0]
+
+		digits.append(int(ch))
+		if seen_dot:
+			frac_count += 1
+
+	if digits.is_empty():
+		return [1, 0]
+
+	return _integer_digits_to_repr(digits, frac_count, sign)
+	
 func _decode_repr(v: Array) -> Dictionary:
 	var sign := 1
 	var decimal_pos := int(v[0])

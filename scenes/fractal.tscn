@@ -29,7 +29,7 @@ offset_bottom = 500.0
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer" unique_id=690440509]
 transparent_bg = true
 handle_input_locally = false
-size = Vector2i(500, 500)
+size = Vector2i(1024, 1024)
 render_target_update_mode = 4
 
 [node name="ColorRect" type="ColorRect" parent="SubViewportContainer/SubViewport" unique_id=1915218705]
@@ -43,18 +43,12 @@ grow_vertical = 2
 
 [node name="HUD" parent="." unique_id=410567131 instance=ExtResource("3_o5ng0")]
 
-[node name="Zoom" parent="HUD" index="1" unique_id=534550499]
-item_count = 5
-popup/item_4/text = "100x"
-popup/item_4/id = 4
-
-[node name="Sprite2D" parent="HUD/WhereAmI" parent_id_path=PackedInt32Array(410567131, 1168038941) index="0" unique_id=1037643189]
-visible = false
-
-[connection signal="value_changed" from="HUD/MaxIter" to="." method="_on_max_iter_value_changed"]
+[connection signal="item_selected" from="HUD/MaxIter" to="." method="_on_max_iter_item_selected"]
 [connection signal="item_selected" from="HUD/Zoom" to="." method="_on_zoom_item_selected"]
 [connection signal="item_selected" from="HUD/Precision" to="." method="_on_precision_item_selected"]
 [connection signal="pressed" from="HUD/WhereAmI" to="." method="_on_where_am_i_pressed"]
+[connection signal="pressed" from="HUD/GoTo" to="." method="_on_go_to_pressed"]
+[connection signal="pressed" from="HUD/GoTo/Submit" to="." method="_on_submit_pressed"]
 [connection signal="pressed" from="HUD/About" to="." method="_on_about_pressed"]
 
 [editable path="HUD"]

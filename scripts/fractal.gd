@@ -26,8 +26,9 @@ var fractal_material: ShaderMaterial
 var current_render_id := 0
 var where_am_i = false
 var about = false
+var goto = false
 
-const TILE_SIZE := 50
+const TILE_SIZE := 64
 
 @onready var viewport_container := $SubViewportContainer
 @onready var subviewport := $SubViewportContainer/SubViewport
@@ -35,7 +36,6 @@ const TILE_SIZE := 50
 
 
 func _ready() -> void:
-	$HUD/Version.text ="v" + ProjectSettings.get_setting("application/config/version")
 	screen_size = get_viewport_rect().size
 	canvas.show()
 	fractal_material = canvas.material
@@ -49,10 +49,6 @@ func _ready() -> void:
 	subviewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 
 	_set_fractal_shader_parameters()
-	fractal_material.set_shader_parameter("digits_precision", digits_precision)
-	fractal_material.set_shader_parameter("max_iter", max_iter)
-	fractal_material.set_shader_parameter("colors", colors)
-	fractal_material.set_shader_parameter("viewport_size", Vector2(subviewport.size))
 	await _store_frame(current_render_id)
 
 func _input(event: InputEvent) -> void:
@@ -64,7 +60,7 @@ func _input(event: InputEvent) -> void:
 	if where_am_i or about:
 		return
 		
-	if event is InputEventMouseButton and event.pressed:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		current_render_id += 1
 		var my_render_id = current_render_id
 		rendering_snapshot = true
@@ -187,6 +183,10 @@ func _set_fractal_shader_parameters() -> void:
 	fractal_material.set_shader_parameter("ex_size", ex_repr.size())
 	fractal_material.set_shader_parameter("ey_size", ey_repr.size())
 	fractal_material.set_shader_parameter("box_size_size", box_size_repr.size())
+	fractal_material.set_shader_parameter("digits_precision", digits_precision)
+	fractal_material.set_shader_parameter("max_iter", max_iter)
+	fractal_material.set_shader_parameter("colors", colors)
+	fractal_material.set_shader_parameter("viewport_size", Vector2(subviewport.size))
 
 func _store_frame(render_id: int) -> void:
 	var render_size: Vector2i = subviewport.size
@@ -230,10 +230,8 @@ func update_vertex(mouse_position_array):
 	box_size = infinite_math.float_repr_sub(bx, ax)
 	center_box_x = mouse_position_array[0]
 	center_box_y = mouse_position_array[1]
-
 	box_size = infinite_math.float_repr_div(box_size, zoom, div_precision)
 	var half_box_size = infinite_math.float_repr_div(box_size, [1, 2, 0], div_precision)
-	print(str(infinite_math.array2string(box_size)), ': ', box_size)
 
 	ax = infinite_math.float_repr_sub(center_box_x, half_box_size)
 	ay = infinite_math.float_repr_add(center_box_y, half_box_size)
@@ -268,38 +266,41 @@ func _on_precision_item_selected(index: int) -> void:
 		digits_precision = 44
 		fractal_material.shader = load("res://resources/materials/fractal_25.gdshader")
 
-	fractal_material.set_shader_parameter("digits_precision", digits_precision)
-	fractal_material.set_shader_parameter("max_iter", max_iter)
-	fractal_material.set_shader_parameter("colors", colors)
 	_set_fractal_shader_parameters()
 	await _store_frame(my_render_id)
 
 func _on_zoom_item_selected(index: int) -> void:
 	var value = (
-		2 if index == 0
-		else 5 if index == 1
-		else 10 if index == 2
-		else 20 if index == 3
+		1 if index == 0
+		else 2 if index == 1
+		else 5 if index == 2
+		else 10 if index == 3
+		else 20 if index == 4
 		else 100
 	)
 	zoom = [1, value, 0]
 	zoom_int = zoom[1]
 
-func _on_max_iter_value_changed(value: float) -> void:
-	max_iter = int(value)
-	$HUD/MaxIter/Label.text = "Max Iter = " + str(max_iter)
+func _on_max_iter_item_selected(index: int) -> void:
+	max_iter = (
+		10 if index == 0
+		else 100 if index == 1
+		else 500 if index == 2
+		else 1000 if index == 3
+		else 1500
+	)
+	
 	current_render_id += 1
 	var my_render_id = current_render_id
 	
-	fractal_material.set_shader_parameter("max_iter", max_iter)
 	_set_fractal_shader_parameters()
 	await _store_frame(my_render_id)
 
 func _on_where_am_i_pressed() -> void:
-	if not about:
+	if not about and not goto:
 		if not where_am_i:
 			where_am_i = true
-			snapshot_rect.modulate = Color(0.3, 0.3, 0.3)
+			snapshot_rect.modulate = Color(0.05, 0.05, 0.05)
 			$HUD/WhereAmI/Sprite2D.show()
 			$HUD/WhereAmI/Sprite2D/X.text = str(infinite_math.array2string(ax))
 			$HUD/WhereAmI/Sprite2D/Y.text = str(infinite_math.array2string(ay))
@@ -310,12 +311,65 @@ func _on_where_am_i_pressed() -> void:
 			$HUD/WhereAmI/Sprite2D.hide()
 
 func _on_about_pressed() -> void:
-	if not where_am_i:
+	if not where_am_i and not goto:
 		if not about:
 			about = true
-			snapshot_rect.modulate = Color(0.2, 0.2, 0.2)
+			snapshot_rect.modulate = Color(0.3, 0.3, 0.3)
 			$HUD/About/RichTextLabel.show()
 		else:
 			about = false
 			snapshot_rect.modulate = Color(1.0, 1.0, 1.0)
 			$HUD/About/RichTextLabel.hide()
+
+func _on_go_to_pressed() -> void:
+	if not where_am_i and not about:
+		if not goto:
+			goto = true
+			snapshot_rect.modulate = Color(0.3, 0.3, 0.3)
+			$HUD/GoTo/LineEditX.show()
+			$HUD/GoTo/LineEditY.show()
+			$HUD/GoTo/LineEditL.show()
+			$HUD/GoTo/Submit.show()
+		else:
+			goto = false
+			snapshot_rect.modulate = Color(1.0, 1.0, 1.0)
+			$HUD/GoTo/LineEditX.hide()
+			$HUD/GoTo/LineEditY.hide()
+			$HUD/GoTo/LineEditL.hide()
+			$HUD/GoTo/Submit.hide()
+	
+func _on_submit_pressed() -> void:
+	var x_value = infinite_math.string_to_array($HUD/GoTo/LineEditX.text)
+	var y_value = infinite_math.string_to_array($HUD/GoTo/LineEditY.text)
+	var l_value = infinite_math.string_to_array($HUD/GoTo/LineEditL.text)
+	var half_l = infinite_math.float_repr_div(l_value, [1, 2, 0], div_precision)
+
+	center_box_x = infinite_math.float_repr_add(x_value, half_l)
+	center_box_y = infinite_math.float_repr_sub(y_value, half_l)
+	box_size = l_value
+
+	ax = x_value
+	ay = y_value
+	bx = infinite_math.float_repr_add(x_value, l_value)
+	#by = y_value
+	#cx = x_value
+	#cy = infinite_math.float_repr_sub(y_value, l_value)
+	#dx = infinite_math.float_repr_add(x_value, l_value)
+	#dy = infinite_math.float_repr_sub(y_value, l_value)
+
+	_set_fractal_shader_parameters()
+
+	current_render_id += 1
+	var my_render_id = current_render_id
+	rendering_snapshot = true
+
+	if my_render_id == current_render_id:
+		rendering_snapshot = false
+		goto = false
+		snapshot_rect.modulate = Color(1.0, 1.0, 1.0)
+		$HUD/GoTo/LineEditX.hide()
+		$HUD/GoTo/LineEditY.hide()
+		$HUD/GoTo/LineEditL.hide()
+		$HUD/GoTo/Submit.hide()
+	
+		await _store_frame(my_render_id)

@@ -104,4 +104,18 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
 	### Fixes ###
 	- Removing unused files
 	- Zoom Label text updated
+
+### v0.5.0
+	### New ###
+	- Main resolution set to 1024x1024 instead of 500x500
+	- Mouse cursor stylized
+	- Game icon defined
+	- "Go to" functionality done
+	- Restart button
+	- Quit button
+	- 1x zoom to move around
+	
+	### Improvements ###
+	- The default tile size has been changed from 50 to 64
+	- Max iter GUI is an option select box insted of slider now
 	
