@@ -55,5 +55,6 @@ visible = false
 [connection signal="item_selected" from="HUD/Zoom" to="." method="_on_zoom_item_selected"]
 [connection signal="item_selected" from="HUD/Precision" to="." method="_on_precision_item_selected"]
 [connection signal="pressed" from="HUD/WhereAmI" to="." method="_on_where_am_i_pressed"]
+[connection signal="pressed" from="HUD/About" to="." method="_on_about_pressed"]
 
 [editable path="HUD"]

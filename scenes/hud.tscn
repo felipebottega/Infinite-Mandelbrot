@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://83t86sttp1kb"]
 
 [ext_resource type="Texture2D" uid="uid://b63a7mysw30x6" path="res://assets/where_am_i.png" id="1_ahhtf"]
+[ext_resource type="Texture2D" uid="uid://dndhfn4p1ow8m" path="res://assets/about.png" id="2_oo0fn"]
+[ext_resource type="FontFile" uid="uid://vk7004dmie4h" path="res://assets/Xolonium-Regular.ttf" id="3_5ysmq"]
 
 [node name="HUD" type="CanvasLayer" unique_id=410567131]
 metadata/_edit_horizontal_guides_ = [492.0, 457.0]
@@ -53,7 +55,7 @@ offset_bottom = 1.0
 tooltip_text = "Level of zoom applied"
 mouse_filter = 1
 theme_override_font_sizes/font_size = 16
-text = "Zoom = 10x"
+text = "Zoom"
 
 [node name="Precision" type="OptionButton" parent="." unique_id=707727658]
 modulate = Color(0.73333335, 0, 0, 1)
@@ -85,34 +87,56 @@ offset_bottom = 458.0
 text = "Where am I?"
 
 [node name="Sprite2D" type="Sprite2D" parent="WhereAmI" unique_id=1037643189]
+visible = false
 modulate = Color(1, 1, 1, 0.5882353)
 position = Vector2(-103, -219)
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("1_ahhtf")
 
-[node name="X" type="Label" parent="WhereAmI/Sprite2D" unique_id=1927830734]
+[node name="X" type="RichTextLabel" parent="WhereAmI/Sprite2D" unique_id=1925996915]
 self_modulate = Color(0, 0, 0, 1)
 offset_left = -499.99988
-offset_top = 230.0
+offset_top = 223.33331
 offset_right = 626.66675
-offset_bottom = 270.0
-theme_override_font_sizes/font_size = 30
+offset_bottom = 272.0
+focus_mode = 2
+theme_override_font_sizes/normal_font_size = 32
+theme_override_font_sizes/bold_font_size = 32
+theme_override_font_sizes/bold_italics_font_size = 32
+theme_override_font_sizes/italics_font_size = 32
+theme_override_font_sizes/mono_font_size = 32
+text = "123"
+selection_enabled = true
 
-[node name="Y" type="Label" parent="WhereAmI/Sprite2D" unique_id=1283991695]
+[node name="Y" type="RichTextLabel" parent="WhereAmI/Sprite2D" unique_id=1016390335]
 self_modulate = Color(0, 0, 0, 1)
 offset_left = -499.99976
-offset_top = 330.0
+offset_top = 323.3333
 offset_right = 626.6669
-offset_bottom = 370.0
-theme_override_font_sizes/font_size = 30
+offset_bottom = 372.0
+focus_mode = 2
+theme_override_font_sizes/normal_font_size = 32
+theme_override_font_sizes/bold_font_size = 32
+theme_override_font_sizes/bold_italics_font_size = 32
+theme_override_font_sizes/italics_font_size = 32
+theme_override_font_sizes/mono_font_size = 32
+text = "123"
+selection_enabled = true
 
-[node name="L" type="Label" parent="WhereAmI/Sprite2D" unique_id=651841859]
+[node name="L" type="RichTextLabel" parent="WhereAmI/Sprite2D" unique_id=1733991511]
 self_modulate = Color(0, 0, 0, 1)
 offset_left = -499.99976
-offset_top = 423.33337
+offset_top = 416.66675
 offset_right = 626.6669
-offset_bottom = 463.33337
-theme_override_font_sizes/font_size = 30
+offset_bottom = 465.33337
+focus_mode = 2
+theme_override_font_sizes/normal_font_size = 32
+theme_override_font_sizes/bold_font_size = 32
+theme_override_font_sizes/bold_italics_font_size = 32
+theme_override_font_sizes/italics_font_size = 32
+theme_override_font_sizes/mono_font_size = 32
+text = "123"
+selection_enabled = true
 
 [node name="GoTo" type="Button" parent="." unique_id=980951377]
 modulate = Color(0.73333335, 0, 0, 1)
@@ -129,3 +153,32 @@ offset_top = 477.0
 offset_right = 508.0
 offset_bottom = 500.0
 theme_override_font_sizes/font_size = 12
+
+[node name="About" type="Button" parent="." unique_id=405678208]
+offset_left = 462.0
+offset_top = 441.0
+offset_right = 497.0
+offset_bottom = 472.0
+icon = ExtResource("2_oo0fn")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="About" unique_id=132085369]
+visible = false
+layout_mode = 0
+offset_left = -455.0
+offset_top = -422.0
+offset_right = 31.0
+offset_bottom = -19.0
+theme_override_fonts/normal_font = ExtResource("3_5ysmq")
+theme_override_font_sizes/normal_font_size = 18
+theme_override_font_sizes/bold_font_size = 20
+theme_override_font_sizes/bold_italics_font_size = 20
+theme_override_font_sizes/italics_font_size = 20
+theme_override_font_sizes/mono_font_size = 20
+bbcode_enabled = true
+text = "[pulse freq=0.2 ease=10.0][b]About:[/b] This project is a Mandelbrot set explorer with arbitrary-precision arithmetic implemented in GLSL (shader language). This allows for an absurd level of zoom, going far beyond the usual float32 precision available in shaders.
+
+[b]Controls:[/b] Simply adjust the parameters and click on the point where you want to zoom in. It is not possible to move sideways or zoom out.
+
+[b]Warning:[/b] If your GPU is not powerful enough, increasing the precision level may cause the application to crash.
+
+[b]Tip:[/b] You can use \"Where am I\" to copy your location in the fractal and then use \"Go to\" to return to exploring that same point at another time.[/pulse]"

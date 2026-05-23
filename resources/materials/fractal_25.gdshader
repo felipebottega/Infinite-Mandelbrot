@@ -1220,18 +1220,18 @@ void transform_coordinate_system(vec2 uv, out int x[MAX_DIGITS], out int x_size,
 vec3 palette(int i) {
 	float t = float(i) / float(max_iter);
 
-	// Corta exterior completamente.
+	// Cut exterior completely.
 	if (i < int(0.01 * float(max_iter))) {
 		return vec3(0.0);
 	}
 
-	// Remapeia só a região interessante.
+	// Remap only the region of interest.
 	t = (t - 0.1) / 0.8;
 
-	// Melhora contraste perto da borda.
+	// Improves contrast near the edge.
 	t = pow(t, 0.2);
 
-	// Paleta com cores distintas.
+	// A palette with distinct colors.
 	return 0.5 + colors * cos(2.0 * colors * TAU * (t + vec3(0.0, 0.25, 0.5)));
 }
 

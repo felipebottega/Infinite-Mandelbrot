@@ -91,3 +91,17 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
 	
 	### Fixes ###
 	- During the zoom, the box size and its half were being considered the same, this is fixed now
+	
+### v0.4.1
+	### New ###
+	- Help/About button
+
+	### Improvements ###
+	- Making the figure of "where am I" more correct
+	- Changing Label to RichTextLabel so the user can copy the numbers
+	- The default tile size has been reduced from 100 to 50 to prevent crashes due to slow GPU computation
+	
+	### Fixes ###
+	- Removing unused files
+	- Zoom Label text updated
+	

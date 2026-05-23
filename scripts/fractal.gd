@@ -25,8 +25,9 @@ var rendering_snapshot := false
 var fractal_material: ShaderMaterial
 var current_render_id := 0
 var where_am_i = false
+var about = false
 
-const TILE_SIZE := 100
+const TILE_SIZE := 50
 
 @onready var viewport_container := $SubViewportContainer
 @onready var subviewport := $SubViewportContainer/SubViewport
@@ -60,7 +61,7 @@ func _input(event: InputEvent) -> void:
 	if hovered != null and hovered != viewport_container:
 		return
 		
-	if where_am_i:
+	if where_am_i or about:
 		return
 		
 	if event is InputEventMouseButton and event.pressed:
@@ -81,37 +82,41 @@ func _input(event: InputEvent) -> void:
 			rendering_snapshot = false
 
 func zoom_animation(mouse_position: Vector2):
-	var position = screen_size/2.0 - zoom_int * mouse_position
+	var zoom_position = screen_size/2.0 - zoom_int * mouse_position
 	var tween = create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(snapshot_rect, "scale", zoom_int * snapshot_rect.scale, 1.0)
-	tween.tween_property(snapshot_rect, "position", position, 1.0)
+	tween.tween_property(snapshot_rect, "position", zoom_position, 1.0)
 	await tween.finished
 
 func _build_preview_image(render_size: Vector2i) -> Image:
 	var frame_image := Image.create(render_size.x, render_size.y, false, Image.FORMAT_RGBA8)
 	frame_image.fill(Color(0.0, 0.0, 0.0, 1.0))
+	
 	if snapshot_rect.texture == null:
 		return frame_image
+		
 	var source_image := snapshot_rect.texture.get_image()
 	var source_size: Vector2i = source_image.get_size()
+	
 	for y in range(render_size.y):
 		for x in range(render_size.x):
 			var source_x := int(floor((float(x) - snapshot_rect.position.x) / snapshot_rect.scale.x))
 			var source_y := int(floor((float(y) - snapshot_rect.position.y) / snapshot_rect.scale.y))
 			if source_x >= 0 and source_x < source_size.x and source_y >= 0 and source_y < source_size.y:
 				frame_image.set_pixel(x, y, source_image.get_pixel(source_x, source_y))
+				
 	return frame_image
 
 func _shader_repr(value: Array) -> Array:
 	var decimal_pos := int(value[0])
 	var digits := []
-	var sign := 1
+	var number_sign := 1
 
 	for i in range(1, value.size()):
 		var d := int(value[i])
 		if d < 0:
-			sign = -1
+			number_sign = -1
 			d = -d
 		digits.append(d)
 
@@ -160,7 +165,7 @@ func _shader_repr(value: Array) -> Array:
 	if all_zero:
 		return [1, 0]
 
-	if sign < 0:
+	if number_sign < 0:
 		for i in range(limbs.size()):
 			if limbs[i] != 0:
 				limbs[i] = -limbs[i]
@@ -266,7 +271,7 @@ func _on_precision_item_selected(index: int) -> void:
 	fractal_material.set_shader_parameter("digits_precision", digits_precision)
 	fractal_material.set_shader_parameter("max_iter", max_iter)
 	fractal_material.set_shader_parameter("colors", colors)
-	_set_fractal_shader_parameters
+	_set_fractal_shader_parameters()
 	await _store_frame(my_render_id)
 
 func _on_zoom_item_selected(index: int) -> void:
@@ -287,18 +292,30 @@ func _on_max_iter_value_changed(value: float) -> void:
 	var my_render_id = current_render_id
 	
 	fractal_material.set_shader_parameter("max_iter", max_iter)
-	_set_fractal_shader_parameters
+	_set_fractal_shader_parameters()
 	await _store_frame(my_render_id)
 
 func _on_where_am_i_pressed() -> void:
+	if not about:
+		if not where_am_i:
+			where_am_i = true
+			snapshot_rect.modulate = Color(0.3, 0.3, 0.3)
+			$HUD/WhereAmI/Sprite2D.show()
+			$HUD/WhereAmI/Sprite2D/X.text = str(infinite_math.array2string(ax))
+			$HUD/WhereAmI/Sprite2D/Y.text = str(infinite_math.array2string(ay))
+			$HUD/WhereAmI/Sprite2D/L.text = str(infinite_math.array2string(box_size))
+		else:
+			where_am_i = false
+			snapshot_rect.modulate = Color(1.0, 1.0, 1.0)
+			$HUD/WhereAmI/Sprite2D.hide()
+
+func _on_about_pressed() -> void:
 	if not where_am_i:
-		where_am_i = true
-		snapshot_rect.modulate = Color(0.3, 0.3, 0.3)
-		$HUD/WhereAmI/Sprite2D.show()
-		$HUD/WhereAmI/Sprite2D/X.text = str(infinite_math.array2string(ax))
-		$HUD/WhereAmI/Sprite2D/Y.text = str(infinite_math.array2string(ay))
-		$HUD/WhereAmI/Sprite2D/L.text = str(infinite_math.array2string(box_size))
-	else:
-		where_am_i = false
-		snapshot_rect.modulate = Color(1.0, 1.0, 1.0)
-		$HUD/WhereAmI/Sprite2D.hide()
+		if not about:
+			about = true
+			snapshot_rect.modulate = Color(0.2, 0.2, 0.2)
+			$HUD/About/RichTextLabel.show()
+		else:
+			about = false
+			snapshot_rect.modulate = Color(1.0, 1.0, 1.0)
+			$HUD/About/RichTextLabel.hide()
