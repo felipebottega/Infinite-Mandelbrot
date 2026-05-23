@@ -53,9 +53,9 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
         System for increasing/decreasing the precision of int arrays ✔️
         Array arithmetic with shaders ✔️
         Rendering of the fractal ✔️
-        Zoom system with shaders
+        Zoom system with shaders ✔️
         History of fractal views
-        UI
+        UI ✔️
 
 ## Release history
 
@@ -80,6 +80,14 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
 	### New ###
 	- Rendering of the fractal with shaders
 	
-### v0.3.0
+### v0.3.1
 	### Improvements ###
 	- More precision in general
+	
+### v0.4.0
+	### New ###
+	- UI
+	- Three levels of precision to change during the execution (with three shader files)
+	
+	### Fixes ###
+	- During the zoom, the box size and its half were being considered the same, this is fixed now

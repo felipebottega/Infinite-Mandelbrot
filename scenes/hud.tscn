@@ -1,0 +1,131 @@
+[gd_scene format=3 uid="uid://83t86sttp1kb"]
+
+[ext_resource type="Texture2D" uid="uid://b63a7mysw30x6" path="res://assets/where_am_i.png" id="1_ahhtf"]
+
+[node name="HUD" type="CanvasLayer" unique_id=410567131]
+metadata/_edit_horizontal_guides_ = [492.0, 457.0]
+
+[node name="MaxIter" type="HSlider" parent="." unique_id=1246697366]
+modulate = Color(0.73333335, 0, 0, 1)
+offset_left = 6.0
+offset_top = 480.0
+offset_right = 104.0
+offset_bottom = 496.0
+min_value = 50.0
+max_value = 1500.0
+step = 50.0
+value = 100.0
+
+[node name="Label" type="Label" parent="MaxIter" unique_id=1837995212]
+layout_mode = 0
+offset_top = -17.0
+offset_right = 113.0
+offset_bottom = 6.0
+tooltip_text = "Maximum number of iterations to 
+test the sequence before considering 
+it converged"
+mouse_filter = 1
+theme_override_font_sizes/font_size = 14
+text = "Max Iter = 100"
+
+[node name="Zoom" type="OptionButton" parent="." unique_id=534550499]
+modulate = Color(0.73333335, 0, 0, 1)
+offset_left = 119.0
+offset_top = 460.0
+offset_right = 217.0
+offset_bottom = 491.0
+selected = 2
+item_count = 4
+popup/item_0/text = "2x"
+popup/item_0/id = 0
+popup/item_1/text = "5x"
+popup/item_1/id = 1
+popup/item_2/text = "10x"
+popup/item_2/id = 2
+popup/item_3/text = "20x"
+popup/item_3/id = 3
+
+[node name="Label" type="Label" parent="Zoom" unique_id=1946858042]
+layout_mode = 0
+offset_top = -22.0
+offset_right = 113.0
+offset_bottom = 1.0
+tooltip_text = "Level of zoom applied"
+mouse_filter = 1
+theme_override_font_sizes/font_size = 16
+text = "Zoom = 10x"
+
+[node name="Precision" type="OptionButton" parent="." unique_id=707727658]
+modulate = Color(0.73333335, 0, 0, 1)
+offset_left = 232.0
+offset_top = 461.0
+offset_right = 339.0
+offset_bottom = 492.0
+selected = 0
+item_count = 3
+popup/item_0/text = "Normal"
+popup/item_0/id = 0
+popup/item_1/text = "High"
+popup/item_1/id = 1
+popup/item_2/text = "Very High"
+popup/item_2/id = 2
+
+[node name="Label" type="Label" parent="Precision" unique_id=655392978]
+layout_mode = 0
+offset_top = -23.0
+offset_right = 71.0
+text = "Precision"
+
+[node name="WhereAmI" type="Button" parent="." unique_id=1168038941]
+self_modulate = Color(0.73333335, 0, 0, 1)
+offset_left = 354.0
+offset_top = 427.0
+offset_right = 458.0
+offset_bottom = 458.0
+text = "Where am I?"
+
+[node name="Sprite2D" type="Sprite2D" parent="WhereAmI" unique_id=1037643189]
+modulate = Color(1, 1, 1, 0.5882353)
+position = Vector2(-103, -219)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("1_ahhtf")
+
+[node name="X" type="Label" parent="WhereAmI/Sprite2D" unique_id=1927830734]
+self_modulate = Color(0, 0, 0, 1)
+offset_left = -499.99988
+offset_top = 230.0
+offset_right = 626.66675
+offset_bottom = 270.0
+theme_override_font_sizes/font_size = 30
+
+[node name="Y" type="Label" parent="WhereAmI/Sprite2D" unique_id=1283991695]
+self_modulate = Color(0, 0, 0, 1)
+offset_left = -499.99976
+offset_top = 330.0
+offset_right = 626.6669
+offset_bottom = 370.0
+theme_override_font_sizes/font_size = 30
+
+[node name="L" type="Label" parent="WhereAmI/Sprite2D" unique_id=651841859]
+self_modulate = Color(0, 0, 0, 1)
+offset_left = -499.99976
+offset_top = 423.33337
+offset_right = 626.6669
+offset_bottom = 463.33337
+theme_override_font_sizes/font_size = 30
+
+[node name="GoTo" type="Button" parent="." unique_id=980951377]
+modulate = Color(0.73333335, 0, 0, 1)
+offset_left = 354.0
+offset_top = 461.0
+offset_right = 458.0
+offset_bottom = 492.0
+text = "Go to"
+
+[node name="Version" type="Label" parent="." unique_id=1045725088]
+modulate = Color(0.73333335, 0, 0, 1)
+offset_left = 463.0
+offset_top = 477.0
+offset_right = 508.0
+offset_bottom = 500.0
+theme_override_font_sizes/font_size = 12

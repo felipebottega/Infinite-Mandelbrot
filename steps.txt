@@ -1,5 +1,0 @@
-conversor float -> array int OK
-aritmética com os arrays OK
-sistema zoom-in, cálculo dos vértices da caixa (apenas numérico)
-sistema zoom-out, cálculo dos vértices da caixa (apenas numérico)
-sistema de aumento/diminuição de precisão dos arrays int

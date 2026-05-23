@@ -438,3 +438,41 @@ func array2float(v: Array) -> float:
 		result = "-" + result
 
 	return float(result)
+	
+func array2string(v: Array) -> String:
+	if v.size() <= 1:
+		return "0"
+
+	var decimal_pos := int(v[0])
+	var sign := 1
+	var digits := ""
+
+	for i in range(1, v.size()):
+		var d := int(v[i])
+		if d < 0:
+			sign = -1
+			d = -d
+		digits += str(d)
+
+	# Garante que exista pelo menos a parte inteira pedida.
+	while digits.length() < decimal_pos:
+		digits += "0"
+
+	var result := ""
+
+	if decimal_pos <= 0:
+		result = "0."
+		for _i in range(-decimal_pos):
+			result += "0"
+		result += digits
+	else:
+		result = digits.substr(0, decimal_pos)
+
+		if decimal_pos < digits.length():
+			result += "." + digits.substr(decimal_pos)
+
+	# Remove o sinal de zero.
+	if sign < 0 and result != "0":
+		result = "-" + result
+
+	return result

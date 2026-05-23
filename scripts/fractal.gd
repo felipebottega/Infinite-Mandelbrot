@@ -15,17 +15,18 @@ var box_size := [1, 4, 0]
 var zoom := [1, 10, 0]
 var zoom_int = zoom[1]
 var screen_size: Vector2
-var digits_precision: int = 42
-var max_iter: int = 1500
+var digits_precision: int = 8
+var max_iter: int = 100
 var colors: float = 0.5
 var infinite_math = InfiniteMath.new()
-var div_precision: = 1000
+var div_precision: = 100
 var snapshot_rect: TextureRect
 var rendering_snapshot := false
 var fractal_material: ShaderMaterial
 var current_render_id := 0
+var where_am_i = false
 
-const TILE_SIZE := 32
+const TILE_SIZE := 100
 
 @onready var viewport_container := $SubViewportContainer
 @onready var subviewport := $SubViewportContainer/SubViewport
@@ -33,6 +34,7 @@ const TILE_SIZE := 32
 
 
 func _ready() -> void:
+	$HUD/Version.text ="v" + ProjectSettings.get_setting("application/config/version")
 	screen_size = get_viewport_rect().size
 	canvas.show()
 	fractal_material = canvas.material
@@ -53,6 +55,14 @@ func _ready() -> void:
 	await _store_frame(current_render_id)
 
 func _input(event: InputEvent) -> void:
+	var hovered = get_viewport().gui_get_hovered_control()
+
+	if hovered != null and hovered != viewport_container:
+		return
+		
+	if where_am_i:
+		return
+		
 	if event is InputEventMouseButton and event.pressed:
 		current_render_id += 1
 		var my_render_id = current_render_id
@@ -165,6 +175,7 @@ func _set_fractal_shader_parameters() -> void:
 	var ex_repr := _shader_repr(center_box_x)
 	var ey_repr := _shader_repr(center_box_y)
 	var box_size_repr := _shader_repr(box_size)
+	
 	fractal_material.set_shader_parameter("ex", PackedInt32Array(ex_repr))
 	fractal_material.set_shader_parameter("ey", PackedInt32Array(ey_repr))
 	fractal_material.set_shader_parameter("box_size", PackedInt32Array(box_size_repr))
@@ -195,8 +206,10 @@ func _store_frame(render_id: int) -> void:
 			fractal_material.set_shader_parameter("tile_size", Vector2(tile_width, tile_height))
 			subviewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 			await RenderingServer.frame_post_draw
+			
 			if render_id != current_render_id:
 				return
+			
 			var tile_image = subviewport.get_texture().get_image()
 			var tile_rect := Rect2i(tile_x, tile_y, tile_width, tile_height)
 			frame_image.blit_rect(tile_image, tile_rect, Vector2i(tile_x, tile_y))
@@ -213,18 +226,18 @@ func update_vertex(mouse_position_array):
 	center_box_x = mouse_position_array[0]
 	center_box_y = mouse_position_array[1]
 
-	var zoomed_box_size = infinite_math.float_repr_div(box_size, zoom, div_precision)
 	box_size = infinite_math.float_repr_div(box_size, zoom, div_precision)
-	print(zoomed_box_size)
+	var half_box_size = infinite_math.float_repr_div(box_size, [1, 2, 0], div_precision)
+	print(str(infinite_math.array2string(box_size)), ': ', box_size)
 
-	ax = infinite_math.float_repr_sub(center_box_x, zoomed_box_size)
-	ay = infinite_math.float_repr_add(center_box_y, zoomed_box_size)
-	bx = infinite_math.float_repr_add(center_box_x, zoomed_box_size)
-	by = infinite_math.float_repr_add(center_box_y, zoomed_box_size)
-	cx = infinite_math.float_repr_sub(center_box_x, zoomed_box_size)
-	cy = infinite_math.float_repr_sub(center_box_y, zoomed_box_size)
-	dx = infinite_math.float_repr_add(center_box_x, zoomed_box_size)
-	dy = infinite_math.float_repr_sub(center_box_y, zoomed_box_size)
+	ax = infinite_math.float_repr_sub(center_box_x, half_box_size)
+	ay = infinite_math.float_repr_add(center_box_y, half_box_size)
+	bx = infinite_math.float_repr_add(center_box_x, half_box_size)
+	#by = infinite_math.float_repr_add(center_box_y, half_box_size)
+	#cx = infinite_math.float_repr_sub(center_box_x, half_box_size)
+	#cy = infinite_math.float_repr_sub(center_box_y, half_box_size)
+	#dx = infinite_math.float_repr_add(center_box_x, half_box_size)
+	#dy = infinite_math.float_repr_sub(center_box_y, half_box_size)
 
 	_set_fractal_shader_parameters()
 
@@ -235,3 +248,57 @@ func _mouse_position_to_box_coordinates(mouse_position: Vector2):
 	var mouse_position_y = infinite_math.float_repr_add(center_box_y, infinite_math.float_repr_mul(box_size, infinite_math.float2array((1.0 - uv.y) - 0.5)))
 
 	return [mouse_position_x, mouse_position_y]
+
+func _on_precision_item_selected(index: int) -> void:
+	current_render_id += 1
+	var my_render_id = current_render_id
+	
+	if index == 0:
+		digits_precision = 8
+		fractal_material.shader = load("res://resources/materials/fractal_8.gdshader")
+	elif index == 1:
+		digits_precision = 28
+		fractal_material.shader = load("res://resources/materials/fractal_16.gdshader")
+	elif index == 2:
+		digits_precision = 44
+		fractal_material.shader = load("res://resources/materials/fractal_25.gdshader")
+
+	fractal_material.set_shader_parameter("digits_precision", digits_precision)
+	fractal_material.set_shader_parameter("max_iter", max_iter)
+	fractal_material.set_shader_parameter("colors", colors)
+	_set_fractal_shader_parameters
+	await _store_frame(my_render_id)
+
+func _on_zoom_item_selected(index: int) -> void:
+	var value = (
+		2 if index == 0
+		else 5 if index == 1
+		else 10 if index == 2
+		else 20 if index == 3
+		else 100
+	)
+	zoom = [1, value, 0]
+	zoom_int = zoom[1]
+
+func _on_max_iter_value_changed(value: float) -> void:
+	max_iter = int(value)
+	$HUD/MaxIter/Label.text = "Max Iter = " + str(max_iter)
+	current_render_id += 1
+	var my_render_id = current_render_id
+	
+	fractal_material.set_shader_parameter("max_iter", max_iter)
+	_set_fractal_shader_parameters
+	await _store_frame(my_render_id)
+
+func _on_where_am_i_pressed() -> void:
+	if not where_am_i:
+		where_am_i = true
+		snapshot_rect.modulate = Color(0.3, 0.3, 0.3)
+		$HUD/WhereAmI/Sprite2D.show()
+		$HUD/WhereAmI/Sprite2D/X.text = str(infinite_math.array2string(ax))
+		$HUD/WhereAmI/Sprite2D/Y.text = str(infinite_math.array2string(ay))
+		$HUD/WhereAmI/Sprite2D/L.text = str(infinite_math.array2string(box_size))
+	else:
+		where_am_i = false
+		snapshot_rect.modulate = Color(1.0, 1.0, 1.0)
+		$HUD/WhereAmI/Sprite2D.hide()

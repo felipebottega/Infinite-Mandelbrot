@@ -1,10 +1,11 @@
 [gd_scene format=3 uid="uid://butl8c2ef7nrq"]
 
-[ext_resource type="Script" uid="uid://ctcde6v82xfnb" path="res://scripts/tests.gd" id="1_738vk"]
-[ext_resource type="Shader" uid="uid://cape688fiufq5" path="res://resources/materials/tests.gdshader" id="2_oumj0"]
+[ext_resource type="Script" uid="uid://ctcde6v82xfnb" path="res://scripts/fractal.gd" id="1_womd6"]
+[ext_resource type="Shader" uid="uid://c5loqudbwl0ox" path="res://resources/materials/fractal_8.gdshader" id="2_womd6"]
+[ext_resource type="PackedScene" uid="uid://83t86sttp1kb" path="res://scenes/hud.tscn" id="3_o5ng0"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lh7aj"]
-shader = ExtResource("2_oumj0")
+shader = ExtResource("2_womd6")
 shader_parameter/ex = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 shader_parameter/ey = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 shader_parameter/box_size = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -18,8 +19,8 @@ shader_parameter/viewport_size = Vector2(0, 0)
 shader_parameter/tile_origin = Vector2(0, 0)
 shader_parameter/tile_size = Vector2(32, 32)
 
-[node name="Tests" type="Node2D" unique_id=294735827]
-script = ExtResource("1_738vk")
+[node name="Fractal" type="Node2D" unique_id=294735827]
+script = ExtResource("1_womd6")
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=1694981504]
 offset_right = 500.0
@@ -39,3 +40,20 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="HUD" parent="." unique_id=410567131 instance=ExtResource("3_o5ng0")]
+
+[node name="Zoom" parent="HUD" index="1" unique_id=534550499]
+item_count = 5
+popup/item_4/text = "100x"
+popup/item_4/id = 4
+
+[node name="Sprite2D" parent="HUD/WhereAmI" parent_id_path=PackedInt32Array(410567131, 1168038941) index="0" unique_id=1037643189]
+visible = false
+
+[connection signal="value_changed" from="HUD/MaxIter" to="." method="_on_max_iter_value_changed"]
+[connection signal="item_selected" from="HUD/Zoom" to="." method="_on_zoom_item_selected"]
+[connection signal="item_selected" from="HUD/Precision" to="." method="_on_precision_item_selected"]
+[connection signal="pressed" from="HUD/WhereAmI" to="." method="_on_where_am_i_pressed"]
+
+[editable path="HUD"]
