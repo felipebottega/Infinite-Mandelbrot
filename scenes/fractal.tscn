@@ -6,14 +6,14 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lh7aj"]
 shader = ExtResource("2_womd6")
-shader_parameter/ex = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-shader_parameter/ey = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-shader_parameter/box_size = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/ex = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/ey = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/box_size = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 shader_parameter/ex_size = 0
 shader_parameter/ey_size = 0
 shader_parameter/box_size_size = 0
 shader_parameter/digits_precision = 0
-shader_parameter/max_iter = 500
+shader_parameter/max_iter = 100
 shader_parameter/colors = 0.5
 shader_parameter/viewport_size = Vector2(0, 0)
 shader_parameter/tile_origin = Vector2(0, 0)

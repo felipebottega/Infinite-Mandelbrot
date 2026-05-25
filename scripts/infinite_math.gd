@@ -48,7 +48,7 @@ func float2array(x: float) -> Array:
 	
 	return vals
 	
-func string_to_array(s: String) -> Array:
+func string2array(s: String) -> Array:
 	var str_x := s.strip_edges()
 	
 	if str_x.is_empty():

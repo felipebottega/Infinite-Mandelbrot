@@ -45,18 +45,6 @@ The following maps are applied in sequence to transform the default UV box into 
 
 $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \overset{(u \cdot \ell,\ v \cdot \ell)}{\mapsto} \overset{(u + E_x,\ v + E_y)}{\mapsto}$$
 
-## Next Steps
-        Converter float to int array ✔️
-        Array arithmetic ✔️
-        Zoom-in system, box vertex calculation (numeric only) ✔️
-        Zoom-out system, box vertex calculation (numeric only) ✔️
-        System for increasing/decreasing the precision of int arrays ✔️
-        Array arithmetic with shaders ✔️
-        Rendering of the fractal ✔️
-        Zoom system with shaders ✔️
-        History of fractal views
-        UI ✔️
-
 ## Release history
 
 ### v0.0.1
@@ -118,4 +106,8 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
 	### Improvements ###
 	- The default tile size has been changed from 50 to 64
 	- Max iter GUI is an option select box insted of slider now
+	
+### v1.0.0
+	### New ###
+	- Stable version
 	
