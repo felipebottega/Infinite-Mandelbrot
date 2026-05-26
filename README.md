@@ -113,4 +113,5 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
 ### v1.0.1
 	### Fixes ###
 	- Fixing title blocking mouse interaction with the game
+	- Maximized screen by default
 	

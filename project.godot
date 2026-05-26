@@ -20,6 +20,7 @@ config/icon="res://assets/game_icon.png"
 
 window/size/viewport_width=1024
 window/size/viewport_height=1024
+window/size/mode=2
 window/stretch/mode="canvas_items"
 mouse_cursor/custom_image="uid://bjv674gewf6t3"
 
