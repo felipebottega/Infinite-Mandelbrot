@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://b63a7mysw30x6" path="res://assets/where_am_i.png" id="1_ahhtf"]
 [ext_resource type="Texture2D" uid="uid://medw0vattc6u" path="res://assets/about.png" id="2_oo0fn"]
 [ext_resource type="FontFile" uid="uid://vk7004dmie4h" path="res://assets/Xolonium-Regular.ttf" id="3_5ysmq"]
+[ext_resource type="FontFile" uid="uid://cls48mtdymh26" path="res://assets/gomarice_g_type.ttf" id="5_uo2fv"]
 
 [node name="HUD" type="CanvasLayer" unique_id=410567131]
 script = ExtResource("1_6fi6k")
@@ -267,6 +268,31 @@ offset_right = 1015.0
 offset_bottom = 1009.99994
 theme_override_font_sizes/font_size = 20
 text = "v0.4.1"
+
+[node name="Title" type="RichTextLabel" parent="." unique_id=1609824521]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -485.0
+offset_top = -501.0
+offset_right = 487.0
+offset_bottom = 457.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/normal_font = ExtResource("5_uo2fv")
+theme_override_font_sizes/normal_font_size = 110
+theme_override_font_sizes/bold_font_size = 110
+theme_override_font_sizes/bold_italics_font_size = 110
+theme_override_font_sizes/italics_font_size = 110
+theme_override_font_sizes/mono_font_size = 110
+bbcode_enabled = true
+text = "
+
+[color=red]Infinite 
+Mandelbrot[/color]"
+fit_content = true
 
 [connection signal="pressed" from="Restart" to="." method="_on_restart_pressed"]
 [connection signal="pressed" from="Quit" to="." method="_on_quit_pressed"]
