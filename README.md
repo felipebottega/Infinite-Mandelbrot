@@ -118,3 +118,10 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
 ### v1.0.2 ###
 	### Improvements ###
 	- Better palette
+	
+### v1.0.3 ###
+	### Improvements ###
+	- Dynamic tile sizes
+	
+	### Fixes ###
+	- Fixed bug in "Go to", it was using an old function name

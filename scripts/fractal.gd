@@ -18,6 +18,7 @@ var screen_size: Vector2
 var digits_precision: int = 8
 var max_iter: int = 100
 var colors: float = 0.5
+var tile_size: int = 128
 var infinite_math = InfiniteMath.new()
 var div_precision: = 100
 var snapshot_rect: TextureRect
@@ -27,8 +28,6 @@ var current_render_id := 0
 var where_am_i = false
 var about = false
 var goto = false
-
-const TILE_SIZE := 64
 
 @onready var viewport_container := $SubViewportContainer
 @onready var subviewport := $SubViewportContainer/SubViewport
@@ -201,12 +200,12 @@ func _store_frame(render_id: int) -> void:
 	snapshot_rect.texture = ImageTexture.create_from_image(frame_image)
 	snapshot_rect.show()
 
-	for tile_y in range(0, render_size.y, TILE_SIZE):
-		for tile_x in range(0, render_size.x, TILE_SIZE):
+	for tile_y in range(0, render_size.y, tile_size):
+		for tile_x in range(0, render_size.x, tile_size):
 			if render_id != current_render_id:
 				return
-			var tile_width = min(TILE_SIZE, render_size.x - tile_x)
-			var tile_height = min(TILE_SIZE, render_size.y - tile_y)
+			var tile_width = min(tile_size, render_size.x - tile_x)
+			var tile_height = min(tile_size, render_size.y - tile_y)
 			fractal_material.set_shader_parameter("tile_origin", Vector2(tile_x, tile_y))
 			fractal_material.set_shader_parameter("tile_size", Vector2(tile_width, tile_height))
 			subviewport.render_target_update_mode = SubViewport.UPDATE_ONCE
@@ -258,12 +257,15 @@ func _on_precision_item_selected(index: int) -> void:
 	
 	if index == 0:
 		digits_precision = 8
+		tile_size = 128
 		fractal_material.shader = load("res://resources/materials/fractal_8.gdshader")
 	elif index == 1:
 		digits_precision = 28
+		tile_size = 64
 		fractal_material.shader = load("res://resources/materials/fractal_16.gdshader")
 	elif index == 2:
 		digits_precision = 44
+		tile_size = 32
 		fractal_material.shader = load("res://resources/materials/fractal_25.gdshader")
 
 	_set_fractal_shader_parameters()
@@ -341,9 +343,9 @@ func _on_go_to_pressed() -> void:
 			$HUD/GoTo/Submit.hide()
 	
 func _on_submit_pressed() -> void:
-	var x_value = infinite_math.string_to_array($HUD/GoTo/LineEditX.text)
-	var y_value = infinite_math.string_to_array($HUD/GoTo/LineEditY.text)
-	var l_value = infinite_math.string_to_array($HUD/GoTo/LineEditL.text)
+	var x_value = infinite_math.string2array($HUD/GoTo/LineEditX.text)
+	var y_value = infinite_math.string2array($HUD/GoTo/LineEditY.text)
+	var l_value = infinite_math.string2array($HUD/GoTo/LineEditL.text)
 	var half_l = infinite_math.float_repr_div(l_value, [1, 2, 0], div_precision)
 
 	center_box_x = infinite_math.float_repr_add(x_value, half_l)
