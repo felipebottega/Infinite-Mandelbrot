@@ -4,11 +4,13 @@
 [ext_resource type="Texture2D" uid="uid://b63a7mysw30x6" path="res://assets/where_am_i.png" id="1_ahhtf"]
 [ext_resource type="Texture2D" uid="uid://medw0vattc6u" path="res://assets/about.png" id="2_oo0fn"]
 [ext_resource type="FontFile" uid="uid://vk7004dmie4h" path="res://assets/Xolonium-Regular.ttf" id="3_5ysmq"]
+[ext_resource type="Texture2D" uid="uid://b7o2sumhne4d4" path="res://assets/palette.png" id="5_047uy"]
 [ext_resource type="FontFile" uid="uid://cls48mtdymh26" path="res://assets/gomarice_g_type.ttf" id="5_uo2fv"]
 
 [node name="HUD" type="CanvasLayer" unique_id=410567131]
 script = ExtResource("1_6fi6k")
 metadata/_edit_horizontal_guides_ = [492.0, 457.0, 1011.0, 966.0, 950.0]
+metadata/_edit_vertical_guides_ = [48.0]
 
 [node name="MaxIter" type="OptionButton" parent="." unique_id=925607705]
 modulate = Color(0.73333335, 0, 0, 1)
@@ -246,11 +248,11 @@ offset_top = -2870.0
 offset_right = 31.0
 offset_bottom = -123.333496
 theme_override_fonts/normal_font = ExtResource("3_5ysmq")
-theme_override_font_sizes/normal_font_size = 120
-theme_override_font_sizes/bold_font_size = 120
-theme_override_font_sizes/bold_italics_font_size = 120
-theme_override_font_sizes/italics_font_size = 120
-theme_override_font_sizes/mono_font_size = 120
+theme_override_font_sizes/normal_font_size = 100
+theme_override_font_sizes/bold_font_size = 100
+theme_override_font_sizes/bold_italics_font_size = 100
+theme_override_font_sizes/italics_font_size = 100
+theme_override_font_sizes/mono_font_size = 100
 bbcode_enabled = true
 text = "[pulse freq=0.2 ease=10.0][b]About:[/b] This project is a Mandelbrot set explorer with arbitrary-precision arithmetic implemented in GLSL (shader language). This allows for an absurd level of zoom, going far beyond the usual float32 precision available in shaders.
 
@@ -259,6 +261,12 @@ text = "[pulse freq=0.2 ease=10.0][b]About:[/b] This project is a Mandelbrot set
 [b]Warning:[/b] If your GPU is not powerful enough, increasing the precision level may cause the application to crash.
 
 [b]Tip:[/b] You can use \"Where am I\" to copy your location in the fractal and then use \"Go to\" to return to exploring that same point later."
+
+[node name="Sprite2D" type="Sprite2D" parent="About" unique_id=1237204403]
+visible = false
+position = Vector2(-1523.3334, -420.00018)
+scale = Vector2(2.3, 2.3)
+texture = ExtResource("5_047uy")
 
 [node name="Version" type="Label" parent="." unique_id=1045725088]
 modulate = Color(0.73333335, 0, 0, 1)

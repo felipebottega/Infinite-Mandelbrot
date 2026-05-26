@@ -316,10 +316,12 @@ func _on_about_pressed() -> void:
 			about = true
 			snapshot_rect.modulate = Color(0.3, 0.3, 0.3)
 			$HUD/About/RichTextLabel.show()
+			$HUD/About/Sprite2D.show()
 		else:
 			about = false
 			snapshot_rect.modulate = Color(1.0, 1.0, 1.0)
 			$HUD/About/RichTextLabel.hide()
+			$HUD/About/Sprite2D.hide()
 
 func _on_go_to_pressed() -> void:
 	if not where_am_i and not about:

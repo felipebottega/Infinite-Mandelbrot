@@ -1218,21 +1218,8 @@ void transform_coordinate_system(vec2 uv, out int x[MAX_DIGITS], out int x_size,
 }
 
 vec3 palette(int i) {
-	float t = float(i) / float(max_iter);
-
-	// Cut exterior completely.
-	if (i < int(0.01 * float(max_iter))) {
-		return vec3(0.0);
-	}
-
-	// Remap only the region of interest.
-	t = (t - 0.1) / 0.8;
-
-	// Improves contrast near the edge.
-	t = pow(t, 0.2);
-
-	// A palette with distinct colors.
-	return 0.5 + colors * cos(2.0 * colors * TAU * (t + vec3(0.0, 0.25, 0.5)));
+    float t = float(i) / float(max_iter);
+	return cos(2.0 + 1.6 * colors * TAU * (t + vec3(0.0, 0.25, 0.5)));
 }
 
 vec4 compute_iteration(int x[MAX_DIGITS], int x_size, int y[MAX_DIGITS], int y_size) {

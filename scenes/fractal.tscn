@@ -43,6 +43,9 @@ grow_vertical = 2
 
 [node name="HUD" parent="." unique_id=410567131 instance=ExtResource("3_o5ng0")]
 
+[node name="Version" parent="HUD" index="8" unique_id=1045725088]
+text = ""
+
 [connection signal="item_selected" from="HUD/MaxIter" to="." method="_on_max_iter_item_selected"]
 [connection signal="item_selected" from="HUD/Zoom" to="." method="_on_zoom_item_selected"]
 [connection signal="item_selected" from="HUD/Precision" to="." method="_on_precision_item_selected"]
