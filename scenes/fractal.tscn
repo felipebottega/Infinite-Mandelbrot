@@ -42,9 +42,18 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="HUD" parent="." unique_id=410567131 instance=ExtResource("3_o5ng0")]
+scale = Vector2(1, 1)
+transform = Transform2D(1, 0, 0, 1, 0, 0)
 
-[node name="Version" parent="HUD" index="8" unique_id=1045725088]
+[node name="Version" parent="HUD" index="9" unique_id=1045725088]
 text = ""
+
+[node name="Title" parent="HUD" index="10" unique_id=1609824521]
+offset_right = 1022.0
+text = "
+
+[color=red] Infinite   
+ Mandelbrot[/color]"
 
 [connection signal="item_selected" from="HUD/MaxIter" to="." method="_on_max_iter_item_selected"]
 [connection signal="item_selected" from="HUD/Zoom" to="." method="_on_zoom_item_selected"]

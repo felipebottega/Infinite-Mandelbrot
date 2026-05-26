@@ -125,3 +125,7 @@ $$(u,\ v) \overset{(u,\ 1-v)}{\mapsto} \overset{(u - 0.5,\ v - 0.5)}{\mapsto} \o
 	
 	### Fixes ###
 	- Fixed bug in "Go to", it was using an old function name
+	
+### v1.1.0 ###
+	### Improvements ###
+	- Initial screen with choices for resolution

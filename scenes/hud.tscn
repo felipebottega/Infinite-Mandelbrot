@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b8ji3n15f3l6c" path="res://scripts/hud.gd" id="1_6fi6k"]
 [ext_resource type="Texture2D" uid="uid://b63a7mysw30x6" path="res://assets/where_am_i.png" id="1_ahhtf"]
+[ext_resource type="Texture2D" uid="uid://gowsdb4ut2rj" path="res://assets/window.png" id="2_5pdws"]
 [ext_resource type="Texture2D" uid="uid://medw0vattc6u" path="res://assets/about.png" id="2_oo0fn"]
 [ext_resource type="FontFile" uid="uid://vk7004dmie4h" path="res://assets/Xolonium-Regular.ttf" id="3_5ysmq"]
 [ext_resource type="Texture2D" uid="uid://b7o2sumhne4d4" path="res://assets/palette.png" id="5_047uy"]
@@ -11,6 +12,12 @@
 script = ExtResource("1_6fi6k")
 metadata/_edit_horizontal_guides_ = [492.0, 457.0, 1011.0, 966.0, 950.0]
 metadata/_edit_vertical_guides_ = [48.0]
+
+[node name="Window" type="Sprite2D" parent="." unique_id=476266657]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(510.99997, 957.5)
+scale = Vector2(4.203125, 1.5375005)
+texture = ExtResource("2_5pdws")
 
 [node name="MaxIter" type="OptionButton" parent="." unique_id=925607705]
 modulate = Color(0.73333335, 0, 0, 1)
@@ -278,17 +285,8 @@ theme_override_font_sizes/font_size = 20
 text = "v0.4.1"
 
 [node name="Title" type="RichTextLabel" parent="." unique_id=1609824521]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -485.0
-offset_top = -501.0
-offset_right = 487.0
-offset_bottom = 457.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_right = 1021.0
+offset_bottom = 958.0
 theme_override_fonts/normal_font = ExtResource("5_uo2fv")
 theme_override_font_sizes/normal_font_size = 110
 theme_override_font_sizes/bold_font_size = 110
@@ -298,8 +296,8 @@ theme_override_font_sizes/mono_font_size = 110
 bbcode_enabled = true
 text = "
 
-[color=red]Infinite 
-Mandelbrot[/color]"
+[color=red] Infinite 
+ Mandelbrot[/color]"
 fit_content = true
 
 [connection signal="pressed" from="Restart" to="." method="_on_restart_pressed"]

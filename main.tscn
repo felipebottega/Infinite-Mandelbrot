@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://dmgvy45kytgga"]
+
+[ext_resource type="Script" uid="uid://d0mh21ecofjmk" path="res://scripts/main.gd" id="1_0xm2m"]
+[ext_resource type="FontFile" uid="uid://vk7004dmie4h" path="res://assets/Xolonium-Regular.ttf" id="1_ig7tw"]
+[ext_resource type="Texture2D" uid="uid://gowsdb4ut2rj" path="res://assets/window.png" id="3_h2yge"]
+
+[node name="main" type="CanvasLayer" unique_id=563683623]
+script = ExtResource("1_0xm2m")
+
+[node name="OptionButton" type="OptionButton" parent="." unique_id=966755786]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -115.5
+offset_top = -20.75
+offset_right = -0.5
+offset_bottom = 20.75
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(2, 2)
+selected = 2
+allow_reselect = true
+item_count = 3
+popup/item_0/text = "256x256"
+popup/item_0/id = 0
+popup/item_1/text = "512x512"
+popup/item_1/id = 1
+popup/item_2/text = "1024x1024"
+popup/item_2/id = 2
+
+[node name="Label" type="Label" parent="OptionButton" unique_id=1102228106]
+layout_mode = 0
+offset_left = -86.75
+offset_top = -39.125
+offset_right = 200.25
+offset_bottom = -14.125
+theme_override_fonts/font = ExtResource("1_ig7tw")
+theme_override_font_sizes/font_size = 20
+text = "Choose the main resolution"
+
+[node name="Window" type="Sprite2D" parent="." unique_id=1995542079]
+visible = false
+position = Vector2(517, 494.00012)
+scale = Vector2(2.5546875, 2.125)
+texture = ExtResource("3_h2yge")
+
+[node name="Label" type="Label" parent="Window" unique_id=1161157502]
+offset_left = -120.17125
+offset_top = -30.117702
+offset_right = 123.82875
+offset_bottom = 23.882298
+theme_override_fonts/font = ExtResource("1_ig7tw")
+theme_override_font_sizes/font_size = 12
+text = "For web execution, it is recommended 
+to use a resolution of 512x512 or 
+lower. Do you wish to proceed?"
+
+[node name="Yes" type="Button" parent="Window" unique_id=365359520]
+offset_left = -79.85321
+offset_top = 45.176414
+offset_right = -24.85321
+offset_bottom = 77.176414
+text = "Yes"
+
+[node name="No" type="Button" parent="Window" unique_id=391733248]
+offset_left = 25.05198
+offset_top = 45.176414
+offset_right = 80.05198
+offset_bottom = 77.176414
+text = "No"
+
+[connection signal="item_selected" from="OptionButton" to="." method="_on_option_button_item_selected"]
+[connection signal="pressed" from="Window/Yes" to="." method="_on_yes_pressed"]
+[connection signal="pressed" from="Window/No" to="." method="_on_no_pressed"]

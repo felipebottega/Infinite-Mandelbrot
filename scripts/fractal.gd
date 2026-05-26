@@ -35,7 +35,8 @@ var goto = false
 
 
 func _ready() -> void:
-	screen_size = get_viewport_rect().size
+	await _change_resolution()
+	tile_size = screen_size[0]
 	canvas.show()
 	fractal_material = canvas.material
 
@@ -49,6 +50,8 @@ func _ready() -> void:
 
 	_set_fractal_shader_parameters()
 	await _store_frame(current_render_id)
+	
+	tile_size = 128
 
 func _input(event: InputEvent) -> void:
 	var hovered = get_viewport().gui_get_hovered_control()
@@ -71,10 +74,20 @@ func _input(event: InputEvent) -> void:
 			return
 			
 		update_vertex(mouse_position_array)
+		subviewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+		await RenderingServer.frame_post_draw
+		await get_tree().process_frame
 		await _store_frame(my_render_id)
 		
 		if my_render_id == current_render_id:
 			rendering_snapshot = false
+			
+func _change_resolution() -> void:
+	var res := Vector2(Manager.resolution, Manager.resolution)    
+	await get_tree().process_frame
+	subviewport.size = res
+	canvas.size = res    
+	screen_size = get_viewport_rect().size    # always 1024 x 1024
 
 func zoom_animation(mouse_position: Vector2):
 	var zoom_position = screen_size/2.0 - zoom_int * mouse_position
@@ -86,22 +99,74 @@ func zoom_animation(mouse_position: Vector2):
 
 func _build_preview_image(render_size: Vector2i) -> Image:
 	var frame_image := Image.create(render_size.x, render_size.y, false, Image.FORMAT_RGBA8)
-	frame_image.fill(Color(0.0, 0.0, 0.0, 1.0))
-	
+	frame_image.fill(Color.BLACK)
+
 	if snapshot_rect.texture == null:
 		return frame_image
-		
+
 	var source_image := snapshot_rect.texture.get_image()
-	var source_size: Vector2i = source_image.get_size()
-	
-	for y in range(render_size.y):
-		for x in range(render_size.x):
-			var source_x := int(floor((float(x) - snapshot_rect.position.x) / snapshot_rect.scale.x))
-			var source_y := int(floor((float(y) - snapshot_rect.position.y) / snapshot_rect.scale.y))
-			if source_x >= 0 and source_x < source_size.x and source_y >= 0 and source_y < source_size.y:
-				frame_image.set_pixel(x, y, source_image.get_pixel(source_x, source_y))
-				
+
+	var src_w := source_image.get_width()
+	var src_h := source_image.get_height()
+
+	var scale := snapshot_rect.scale
+	var position := snapshot_rect.position
+
+	for y in render_size.y:
+		for x in render_size.x:
+			var screen_pos := Vector2(x, y)
+
+			# Inverte a transformação aplicada pelo tween
+			var coord_scale := float(render_size.x) / float(screen_size.x)
+			var uv := (screen_pos - position * coord_scale) / scale
+			var sx := int(uv.x)
+			var sy := int(uv.y)
+ 
+			if sx >= 0 and sx < src_w and sy >= 0 and sy < src_h:
+				frame_image.set_pixel(x, y, source_image.get_pixel(sx, sy))
+
 	return frame_image
+
+func _store_frame(render_id: int) -> void:
+	var render_size: Vector2i = subviewport.size
+	var frame_image := _build_preview_image(render_size)
+
+	snapshot_rect.scale = Vector2.ONE
+	snapshot_rect.position = Vector2.ZERO
+	snapshot_rect.texture = ImageTexture.create_from_image(frame_image)
+	snapshot_rect.show()
+	
+	viewport_container.show()
+	
+	canvas.show()
+	canvas.material = fractal_material
+	
+	fractal_material.set_shader_parameter("viewport_size", Vector2(subviewport.size))
+
+	for tile_y in range(0, render_size.y, tile_size):
+		for tile_x in range(0, render_size.x, tile_size):
+			if render_id != current_render_id:
+				return
+			var tile_width = min(tile_size, render_size.x - tile_x)
+			var tile_height = min(tile_size, render_size.y - tile_y)
+			fractal_material.set_shader_parameter("tile_origin", Vector2(tile_x, tile_y))
+			fractal_material.set_shader_parameter("tile_size", Vector2(tile_width, tile_height))
+			subviewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+			await RenderingServer.frame_post_draw
+			
+			if render_id != current_render_id:
+				return
+			
+			var tile_image = subviewport.get_texture().get_image()
+			var tile_rect := Rect2i(tile_x, tile_y, tile_width, tile_height)
+			frame_image.blit_rect(tile_image, tile_rect, Vector2i(tile_x, tile_y))
+			snapshot_rect.texture = ImageTexture.create_from_image(frame_image)
+			await get_tree().process_frame
+
+	if render_id == current_render_id:
+		subviewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+		canvas.material = null
+		viewport_container.hide()
 
 func _shader_repr(value: Array) -> Array:
 	var decimal_pos := int(value[0])
@@ -186,44 +251,6 @@ func _set_fractal_shader_parameters() -> void:
 	fractal_material.set_shader_parameter("max_iter", max_iter)
 	fractal_material.set_shader_parameter("colors", colors)
 	fractal_material.set_shader_parameter("viewport_size", Vector2(subviewport.size))
-
-func _store_frame(render_id: int) -> void:
-	var render_size: Vector2i = subviewport.size
-	var frame_image := _build_preview_image(render_size)
-
-	snapshot_rect.scale = Vector2.ONE
-	snapshot_rect.position = Vector2.ZERO
-	viewport_container.show()
-	canvas.show()
-	canvas.material = fractal_material
-	fractal_material.set_shader_parameter("viewport_size", Vector2(subviewport.size))
-	snapshot_rect.texture = ImageTexture.create_from_image(frame_image)
-	snapshot_rect.show()
-
-	for tile_y in range(0, render_size.y, tile_size):
-		for tile_x in range(0, render_size.x, tile_size):
-			if render_id != current_render_id:
-				return
-			var tile_width = min(tile_size, render_size.x - tile_x)
-			var tile_height = min(tile_size, render_size.y - tile_y)
-			fractal_material.set_shader_parameter("tile_origin", Vector2(tile_x, tile_y))
-			fractal_material.set_shader_parameter("tile_size", Vector2(tile_width, tile_height))
-			subviewport.render_target_update_mode = SubViewport.UPDATE_ONCE
-			await RenderingServer.frame_post_draw
-			
-			if render_id != current_render_id:
-				return
-			
-			var tile_image = subviewport.get_texture().get_image()
-			var tile_rect := Rect2i(tile_x, tile_y, tile_width, tile_height)
-			frame_image.blit_rect(tile_image, tile_rect, Vector2i(tile_x, tile_y))
-			snapshot_rect.texture = ImageTexture.create_from_image(frame_image)
-			await get_tree().process_frame
-
-	if render_id == current_render_id:
-		subviewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
-		canvas.material = null
-		viewport_container.hide()
 
 func update_vertex(mouse_position_array):
 	box_size = infinite_math.float_repr_sub(bx, ax)
