@@ -53,9 +53,6 @@ offset_right = 123.82875
 offset_bottom = 23.882298
 theme_override_fonts/font = ExtResource("1_ig7tw")
 theme_override_font_sizes/font_size = 12
-text = "For web execution, it is recommended 
-to use a resolution of 512x512 or 
-lower. Do you wish to proceed?"
 
 [node name="Yes" type="Button" parent="Window" unique_id=365359520]
 offset_left = -79.85321
